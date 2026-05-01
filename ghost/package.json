@@ -1,12 +1,13 @@
 {
   "name": "onion-chat-mamba",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "bin": {
     "onion-chat-mamba": "dist/cli/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "logo.txt"
   ],
   "scripts": {
     "dev:server": "tsx watch server/index.ts",
