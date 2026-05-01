@@ -1,0 +1,27 @@
+{
+  "name": "black-mamba",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "black-mamba": "dist/cli/index.js"
+  },
+  "scripts": {
+    "dev:server": "tsx watch server/index.ts",
+    "dev:cli": "tsx cli/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start:server": "node dist/server/index.js",
+    "start:cli": "node dist/cli/index.js"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.24",
+    "@types/node": "^22.10.2",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

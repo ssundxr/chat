@@ -1,0 +1,20 @@
+services:
+  relay:
+    build:
+      context: ./server
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - CORS_ORIGIN=http://localhost:5173
+      - ROOM_TTL_SECONDS=600
+      - DEFAULT_MESSAGE_TTL_SECONDS=420
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "5173:80"
+    restart: unless-stopped

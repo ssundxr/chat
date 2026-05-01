@@ -1,0 +1,22 @@
+[Unit]
+Description=Black Mamba Relay Server
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/black-mamba-server
+ExecStart=/usr/bin/node dist/server/index.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment="NODE_ENV=production"
+Environment="BLACK_MAMBA_HOST=0.0.0.0"
+Environment="BLACK_MAMBA_PORT=8090"
+Environment="BLACK_MAMBA_TTL_MS=600000"
+Environment="BLACK_MAMBA_MAX_ROOMS=500"
+Environment="BLACK_MAMBA_MAX_ROOM_SIZE=10"
+
+[Install]
+WantedBy=multi-user.target
