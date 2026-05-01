@@ -8,7 +8,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
   await blackMambaClient.connect(clientId);
 
   const screen = blessed.screen({
-    smartCSR: true,
+    smartCSR: false,
     title: `black-mamba :: ${roomId}`,
     fullUnicode: true
   });
