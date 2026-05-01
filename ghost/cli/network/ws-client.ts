@@ -23,7 +23,7 @@ export type BlackMambaClientEvents = {
   close: () => void;
 };
 
-const WS_URL = process.env.BLACK_MAMBA_WS_URL ?? "ws://127.0.0.1:8090";
+const WS_URL = process.env.BLACK_MAMBA_WS_URL ?? "ws://13.53.212.66:8090";
 
 export class BlackMambaWsClient extends EventEmitter {
   private socket: WebSocket | null = null;
