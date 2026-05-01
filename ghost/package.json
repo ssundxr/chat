@@ -1,11 +1,13 @@
 {
-  "name": "black-mamba",
-  "version": "1.0.0",
-  "private": true,
+  "name": "onion-chat-mamba",
+  "version": "1.0.2",
   "type": "module",
   "bin": {
-    "black-mamba": "dist/cli/index.js"
+    "onion-chat-mamba": "dist/cli/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev:server": "tsx watch server/index.ts",
     "dev:cli": "tsx cli/index.ts",

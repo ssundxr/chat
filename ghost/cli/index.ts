@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { startup } from "./ui/startup.js";
 import { launchMainMenu } from "./commands/start.js";
 
