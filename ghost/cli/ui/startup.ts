@@ -58,7 +58,7 @@ export async function startup(): Promise<StartupContext> {
   process.stdout.write("\u001Bc");
   const logo = loadLogo();
   process.stdout.write(`${logo}\n`);
-  process.stdout.write(`black mamba v1.0.9  terminal-native · end-to-end encrypted · ephemeral\n`);
+  process.stdout.write(`black mamba v1.1.0  terminal-native · end-to-end encrypted · ephemeral\n`);
   process.stdout.write(`└─ shell mode: armed | transport: relay | crypto: ECDH + AES-GCM\n\n`);
 
   let session: Awaited<ReturnType<typeof createSessionKeyPair>> | undefined;
