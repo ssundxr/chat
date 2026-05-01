@@ -11,10 +11,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     smartCSR: false,
     title: `black-mamba :: ${roomId}`,
     fullUnicode: true,
-    terminal: "xterm-256color"
   });
-
-  screen.program.echo = false;
 
   const header = blessed.box({
     top: 0,
