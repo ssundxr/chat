@@ -38,7 +38,7 @@ function green(text: string): string {
 function loadLogo(): string {
   const candidates = [
     path.resolve(process.cwd(), "logo.txt"),
-    path.resolve(__dirname, "../../logo.txt")
+    path.resolve(__dirname, "../../../logo.txt")
   ];
 
   for (const p of candidates) {
@@ -58,7 +58,7 @@ export async function startup(): Promise<StartupContext> {
   process.stdout.write("\u001Bc");
   const logo = loadLogo();
   process.stdout.write(`${logo}\n`);
-  process.stdout.write(`black mamba v1.0.3  terminal-native · end-to-end encrypted · ephemeral\n`);
+  process.stdout.write(`black mamba v1.0.4  terminal-native · end-to-end encrypted · ephemeral\n`);
   process.stdout.write(`└─ shell mode: armed | transport: relay | crypto: ECDH + AES-GCM\n\n`);
 
   let session: Awaited<ReturnType<typeof createSessionKeyPair>> | undefined;
