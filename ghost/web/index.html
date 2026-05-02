@@ -2,804 +2,710 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Black Mamba :: Secure Chat</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>black_mamba</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --green: #00FF41;
-    --blue: #0066CC;
-    --red: #C74634;
-    --orange: #FF6600;
-    --dim: #888888;
-    --bg: #0a0a0a;
-    --bg2: #111111;
-    --border: #1a1a1a;
-    --text: #E0E0E0;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; font-size: 14px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000;
+  --bg-alt:#050505;
+  --fg:#00ff66;
+  --fg-dim:#007733;
+  --fg-ghost:#00ff66;
+  --txt:#a8a8a8;
+  --txt-dim:#555;
+  --red:#ff0040;
+  --yellow:#ffaa00;
+  --border:#0f0f0f;
+  --border-hot:#003311;
+  --scan:rgba(0,255,102,0.03);
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{
+  background:
+    linear-gradient(var(--bg),var(--bg)),
+    repeating-linear-gradient(0deg,transparent 0,transparent 2px,var(--scan) 2px,var(--scan) 3px);
+  background-blend-mode:screen;
+}
+::selection{background:var(--fg);color:var(--bg)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border-hot)}
+::-webkit-scrollbar-thumb:hover{background:var(--fg-dim)}
 
-  /* ── LANDING ── */
-  #landing {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 2rem;
-  }
-  #landing pre {
-    color: var(--green); font-size: clamp(5px, 1.1vw, 13px);
-    line-height: 1.1; margin-bottom: 1.5rem; text-align: center; white-space: pre;
-  }
-  .tagline { color: var(--dim); font-size: 12px; margin-bottom: 2.5rem; text-align: center; }
-  .tagline span { color: var(--green); }
-  .card {
-    background: var(--bg2); border: 1px solid var(--border);
-    padding: 2rem; width: 100%; max-width: 460px;
-  }
-  .card-title { color: var(--green); font-size: 11px; letter-spacing: 2px; margin-bottom: 1.5rem; }
-  .input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-  .inp {
-    flex: 1; background: var(--bg); border: 1px solid #333; color: var(--green);
-    padding: 0.6rem 0.8rem; font-family: inherit; font-size: 14px; outline: none;
-    text-transform: uppercase; letter-spacing: 1px;
-  }
-  .inp::placeholder { color: var(--dim); text-transform: none; letter-spacing: 0; }
-  .inp:focus { border-color: var(--green); }
-  .btn {
-    background: transparent; border: 1px solid var(--green); color: var(--green);
-    padding: 0.6rem 1.2rem; font-family: inherit; font-size: 13px; cursor: pointer;
-    letter-spacing: 1px; white-space: nowrap; transition: background 0.15s;
-  }
-  .btn:hover { background: var(--green); color: var(--bg); }
-  .btn.ghost { border-color: var(--orange); color: var(--orange); }
-  .btn.ghost:hover { background: var(--orange); color: var(--bg); }
-  .btn.red { border-color: var(--red); color: var(--red); }
-  .btn.red:hover { background: var(--red); color: #fff; }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
-  .or { text-align: center; color: var(--dim); font-size: 11px; margin: -0.6rem 0 1rem; background: var(--bg2); width: 2rem; margin: -0.75rem auto 1rem; }
-  .security-note { color: var(--dim); font-size: 11px; margin-top: 1.5rem; line-height: 1.7; }
-  .security-note span { color: var(--green); }
+/* ─── top status bar ─── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 14px;background:var(--bg);border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--txt-dim);letter-spacing:1px;
+}
+.topbar .brand{color:var(--fg);font-weight:700}
+.topbar .brand::before{content:"● ";color:var(--red);animation:blink 1.2s infinite}
+.topbar .meta{display:flex;gap:18px}
+.topbar .meta span b{color:var(--fg-dim);font-weight:400}
+@keyframes blink{0%,60%{opacity:1}61%,100%{opacity:.15}}
 
-  /* ── CHAT ── */
-  #chat { display: none; flex-direction: column; height: 100vh; }
-  #chat-header {
-    background: var(--bg2); border-bottom: 1px solid var(--border);
-    padding: 0.7rem 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-  }
-  .room-badge {
-    color: var(--green); font-size: 12px; letter-spacing: 1px;
-  }
-  .room-badge.ghost-badge { color: var(--orange); }
-  #countdown {
-    color: var(--red); font-size: 12px; font-weight: bold; min-width: 80px;
-  }
-  #peer-count { color: var(--dim); font-size: 11px; }
-  #self-fp { color: var(--dim); font-size: 11px; }
-  .hdr-spacer { flex: 1; }
-  #btn-burn {
-    background: transparent; border: 1px solid var(--red); color: var(--red);
-    padding: 0.3rem 0.8rem; font-family: inherit; font-size: 11px; cursor: pointer;
-    letter-spacing: 1px;
-  }
-  #btn-burn:hover { background: var(--red); color: #fff; }
-  #btn-leave {
-    background: transparent; border: 1px solid #333; color: var(--dim);
-    padding: 0.3rem 0.8rem; font-family: inherit; font-size: 11px; cursor: pointer;
-  }
-  #btn-leave:hover { border-color: var(--dim); color: var(--text); }
+/* ─── main layout ─── */
+.wrap{min-height:100vh;display:flex;flex-direction:column;padding:42px 16px 28px}
 
-  #messages {
-    flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.4rem;
-    scroll-behavior: smooth;
-  }
-  #messages::-webkit-scrollbar { width: 4px; }
-  #messages::-webkit-scrollbar-track { background: var(--bg); }
-  #messages::-webkit-scrollbar-thumb { background: #333; }
+/* ─── LANDING ─── */
+.landing{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0}
+.logo{color:var(--fg);font-size:clamp(6px,1vw,11px);line-height:1.1;white-space:pre;text-align:center;margin-bottom:18px;text-shadow:0 0 10px rgba(0,255,102,0.25)}
+.tag{color:var(--txt-dim);font-size:11px;letter-spacing:2px;margin-bottom:36px;text-align:center}
+.tag b{color:var(--fg);font-weight:400}
+.tag .sep{color:var(--border-hot);margin:0 6px}
 
-  .msg { line-height: 1.5; word-break: break-word; }
-  .msg .time { color: var(--red); font-size: 11px; margin-right: 0.4rem; }
-  .msg .sender { color: var(--green); font-weight: bold; margin-right: 0.3rem; }
-  .msg .sender.self { color: var(--dim); }
-  .msg .arrow { color: var(--blue); margin-right: 0.3rem; }
-  .msg.ghost-mode .sender { color: var(--orange); }
-  .msg.system { color: var(--dim); font-size: 12px; }
-  .msg.system .prefix { color: var(--blue); }
-  .msg.system.warn .prefix { color: var(--orange); }
-  .msg.system.error .prefix { color: var(--red); }
-  .msg.burn-msg { color: var(--red); font-weight: bold; }
-  .ack-tag {
-    display: inline-block; background: var(--green); color: var(--bg);
-    font-size: 10px; padding: 1px 4px; margin-left: 0.4rem; vertical-align: middle;
-  }
-  .ack-tag.ghost-ack { background: var(--orange); }
+/* panels */
+.panel{width:100%;max-width:520px;border:1px solid var(--border);background:var(--bg-alt);margin-bottom:14px;position:relative}
+.panel::before{content:"";position:absolute;top:-1px;left:-1px;width:6px;height:6px;border-top:1px solid var(--fg);border-left:1px solid var(--fg)}
+.panel::after{content:"";position:absolute;bottom:-1px;right:-1px;width:6px;height:6px;border-bottom:1px solid var(--fg);border-right:1px solid var(--fg)}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg);color:var(--fg);font-size:10px;letter-spacing:2px;font-weight:500}
+.panel-head .dot{color:var(--fg-dim)}
+.panel-head .badge{color:var(--txt-dim);font-size:10px}
+.panel-body{padding:16px 14px}
 
-  #input-bar {
-    background: var(--bg2); border-top: 1px solid var(--border);
-    display: flex; align-items: stretch; padding: 0;
-  }
-  #input-label {
-    color: var(--dim); font-size: 12px; padding: 0.8rem 0.8rem 0.8rem 1rem;
-    white-space: nowrap; border-right: 1px solid var(--border); user-select: none;
-  }
-  #msg-input {
-    flex: 1; background: transparent; border: none; color: var(--green);
-    padding: 0.8rem; font-family: inherit; font-size: 14px; outline: none;
-  }
-  #msg-input.ghost-input { color: var(--orange); }
-  #send-btn {
-    background: transparent; border: none; border-left: 1px solid var(--border);
-    color: var(--green); padding: 0 1.2rem; font-family: inherit; font-size: 18px;
-    cursor: pointer;
-  }
-  #send-btn.ghost-send { color: var(--orange); }
-  #send-btn:hover { background: #1a1a1a; }
+/* inputs / buttons */
+.row{display:flex;gap:1px;background:var(--border);border:1px solid var(--border-hot)}
+.inp{
+  flex:1;background:var(--bg);border:0;outline:0;color:var(--fg);
+  font-family:inherit;font-size:13px;padding:10px 12px;letter-spacing:1.5px;
+  text-transform:uppercase;caret-color:var(--fg);
+}
+.inp::placeholder{color:var(--txt-dim);letter-spacing:.5px;text-transform:none}
+.inp:focus{background:#020}
+.btn{
+  background:var(--bg);border:0;color:var(--fg);
+  font-family:inherit;font-size:11px;letter-spacing:2px;
+  padding:10px 18px;cursor:pointer;transition:all .08s linear;
+  text-transform:uppercase;font-weight:500;
+}
+.btn:hover{background:var(--fg);color:var(--bg)}
+.btn.ghost{color:var(--fg-ghost)}
+.btn.ghost:hover{background:var(--fg-ghost);color:var(--bg)}
+.btn.red{color:var(--red)}
+.btn.red:hover{background:var(--red);color:#fff}
+.btn-block{display:block;width:100%;text-align:left;padding:10px 14px;background:var(--bg);border:1px solid var(--border);color:var(--txt);margin-bottom:1px;font-size:12px}
+.btn-block:hover{background:var(--bg-alt);color:var(--fg);border-color:var(--border-hot)}
+.btn-block .k{color:var(--fg);margin-right:10px}
+.btn-block .arr{float:right;color:var(--txt-dim)}
+.btn-block:hover .arr{color:var(--fg)}
 
-  /* ── BURN OVERLAY ── */
-  #burn-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-    align-items: center; justify-content: center; z-index: 100; flex-direction: column; gap: 1rem;
-  }
-  #burn-overlay pre { color: var(--red); font-size: clamp(6px, 1.5vw, 14px); line-height: 1.1; }
-  #burn-overlay .burn-msg-txt { color: var(--red); font-size: 13px; letter-spacing: 2px; }
+/* footer info */
+.spec{font-size:10px;color:var(--txt-dim);line-height:1.9;letter-spacing:.4px;margin-top:10px}
+.spec .k{color:var(--fg-dim);display:inline-block;width:85px}
+.spec .v{color:var(--txt)}
+.kbd{display:inline-block;background:var(--bg-alt);border:1px solid var(--border-hot);color:var(--fg);padding:1px 6px;font-size:10px;border-radius:1px}
 
-  /* ── SECRET VIEW ── */
-  #secret-view {
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 2rem;
-  }
-  #secret-box {
-    background: var(--bg2); border: 1px solid var(--border); padding: 2rem;
-    width: 100%; max-width: 560px;
-  }
-  #secret-box pre { color: var(--green); font-size: 11px; margin-bottom: 1.5rem; text-align: center; }
-  .secret-title { color: var(--orange); font-size: 11px; letter-spacing: 2px; margin-bottom: 1rem; }
-  #secret-text {
-    background: var(--bg); border: 1px solid #333; color: var(--green);
-    padding: 1rem; font-family: inherit; font-size: 14px; width: 100%;
-    min-height: 80px; margin-bottom: 1rem; resize: vertical; outline: none;
-  }
-  #secret-text:focus { border-color: var(--green); }
-  .secret-note { color: var(--dim); font-size: 11px; margin-top: 1rem; line-height: 1.7; }
-  .secret-note span { color: var(--orange); }
-  #secret-link-box {
-    display: none; margin-top: 1.5rem; padding: 1rem;
-    background: var(--bg); border: 1px solid #333;
-  }
-  #secret-link-box .label { color: var(--dim); font-size: 11px; margin-bottom: 0.5rem; }
-  #secret-link-val { color: var(--orange); font-size: 12px; word-break: break-all; }
-  #copy-link-btn { margin-top: 0.8rem; }
+/* HTTP warn banner */
+.warn{display:none;border:1px solid var(--red);background:#1a0000;color:var(--red);padding:10px 14px;margin-bottom:14px;font-size:11px;max-width:520px;width:100%;letter-spacing:.5px}
+.warn b{color:var(--red);font-weight:700}
 
-  @media (max-width: 600px) {
-    #landing pre { display: none; }
-    .card { padding: 1.2rem; }
-    #chat-header { gap: 0.5rem; }
-    #self-fp { display: none; }
-  }
+/* ─── CHAT ─── */
+.chat{display:none;flex-direction:column;height:calc(100vh - 30px);width:100%;max-width:980px;margin:0 auto;border:1px solid var(--border)}
+.chat-head{display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--bg-alt);border-bottom:1px solid var(--border);font-size:11px;flex-wrap:wrap}
+.chat-head .tag-g{color:var(--fg);letter-spacing:1.5px}
+.chat-head .tag-g.ghost{color:var(--yellow)}
+.chat-head .pipe{color:var(--border-hot)}
+.chat-head .count{color:var(--txt-dim)}
+.chat-head .count b{color:var(--fg);font-weight:400}
+.chat-head .self{color:var(--txt-dim)}
+.chat-head .self b{color:var(--fg-dim);font-weight:400}
+.chat-head .timer{color:var(--red);font-weight:700;letter-spacing:1px}
+.chat-head .spacer{flex:1}
+.chat-head .mini{background:transparent;border:1px solid var(--border-hot);color:var(--txt-dim);padding:4px 10px;font-family:inherit;font-size:10px;cursor:pointer;letter-spacing:1.5px}
+.chat-head .mini:hover{border-color:var(--fg);color:var(--fg)}
+.chat-head .mini.red:hover{border-color:var(--red);color:var(--red)}
+
+.msgs{flex:1;overflow-y:auto;padding:14px;background:var(--bg);display:flex;flex-direction:column;gap:2px}
+.m{font-size:12.5px;word-break:break-word;line-height:1.55}
+.m .t{color:var(--txt-dim);margin-right:8px;font-size:11px}
+.m .from{color:var(--fg);margin-right:6px;font-weight:500}
+.m .from.me{color:var(--fg-dim)}
+.m .arr{color:var(--border-hot);margin-right:6px}
+.m.ghost .from{color:var(--yellow)}
+.m.sys{color:var(--txt-dim);font-size:11px;letter-spacing:.3px}
+.m.sys .pre{color:var(--fg-dim);margin-right:6px}
+.m.sys.w{color:var(--yellow)}
+.m.sys.w .pre{color:var(--yellow)}
+.m.sys.e{color:var(--red)}
+.m.sys.e .pre{color:var(--red)}
+.m .ok{color:var(--fg);margin-left:6px;font-size:10px}
+
+.compose{display:flex;background:var(--bg-alt);border-top:1px solid var(--border)}
+.compose .prompt{color:var(--fg);padding:11px 4px 11px 14px;font-size:12px;user-select:none;font-weight:500}
+.compose .prompt.ghost{color:var(--yellow)}
+.compose input{flex:1;background:transparent;border:0;outline:0;color:var(--fg);font-family:inherit;font-size:13px;padding:11px 8px;caret-color:var(--fg)}
+.compose input.ghost-c{color:var(--yellow)}
+.compose input::placeholder{color:var(--txt-dim)}
+.compose .send{background:transparent;border:0;border-left:1px solid var(--border);color:var(--fg);font-family:inherit;font-size:14px;padding:0 18px;cursor:pointer;letter-spacing:2px}
+.compose .send.ghost-c{color:var(--yellow)}
+.compose .send:hover{background:var(--fg);color:var(--bg)}
+
+/* burn overlay */
+.burn{display:none;position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:18px;animation:flick .08s 4}
+.burn pre{color:var(--red);font-size:clamp(8px,1.3vw,14px);line-height:1.1;text-shadow:0 0 20px var(--red)}
+.burn .b{color:var(--red);font-size:12px;letter-spacing:4px;animation:blink 0.5s infinite}
+@keyframes flick{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* secret view */
+.secret-view{display:none;flex:1;align-items:center;justify-content:center;padding:20px}
+.secret-panel{width:100%;max-width:620px}
+.secret-out{display:none;border:1px solid var(--fg-dim);background:var(--bg-alt);padding:14px;margin-top:10px}
+.secret-out .label{color:var(--txt-dim);font-size:10px;letter-spacing:1.5px;margin-bottom:8px}
+.secret-out .val{color:var(--fg);word-break:break-all;font-size:12px;background:var(--bg);padding:10px;border:1px solid var(--border)}
+.secret-display{display:none;border:1px solid var(--fg-dim);padding:14px;background:var(--bg-alt);margin-top:10px}
+.secret-display .txt{color:var(--fg);padding:12px;background:var(--bg);border:1px solid var(--border);word-break:break-all;font-size:13px;letter-spacing:.5px}
+textarea.inp{width:100%;min-height:90px;text-transform:none;letter-spacing:.3px;resize:vertical}
+
+@media(max-width:640px){
+  .topbar .meta{gap:8px;font-size:10px}
+  .topbar .meta span:nth-child(2){display:none}
+  .logo{font-size:5px}
+  .tag{font-size:10px;letter-spacing:1px}
+  .chat-head{gap:6px;font-size:10px}
+  .chat-head .self,.chat-head .pipe:nth-of-type(2){display:none}
+}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════ LANDING ═══════════════════════ -->
-<div id="landing">
-<pre>
- ██████╗ ██╗      █████╗  ██████╗██╗  ██╗    ███╗   ███╗ █████╗ ███╗   ███╗██████╗  █████╗
- ██╔══██╗██║     ██╔══██╗██╔════╝██║ ██╔╝    ████╗ ████║██╔══██╗████╗ ████║██╔══██╗██╔══██╗
- ██████╔╝██║     ███████║██║     █████╔╝     ██╔████╔██║███████║██╔████╔██║██████╔╝███████║
- ██╔══██╗██║     ██╔══██║██║     ██╔═██╗     ██║╚██╔╝██║██╔══██║██║╚██╔╝██║██╔══██╗██╔══██║
- ██████╔╝███████╗██║  ██║╚██████╗██║  ██╗    ██║ ╚═╝ ██║██║  ██║██║ ╚═╝ ██║██████╔╝██║  ██║
- ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═════╝ ╚═╝  ╚═╝
+<!-- ═══════════════════ TOP STATUS BAR ═══════════════════ -->
+<div class="topbar">
+  <div class="brand">BLACK_MAMBA</div>
+  <div class="meta">
+    <span><b>proto:</b> ecdh-p256 + aes256gcm</span>
+    <span><b>relay:</b> <span id="relay-state">init</span></span>
+    <span><b>id:</b> <span id="self-id">--------</span></span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════ LANDING ═══════════════════ -->
+<div class="landing" id="landing">
+<pre class="logo">
+  ▄▄▄▄    ██▓    ▄▄▄       ▄████▄   ██ ▄█▀    ███▄ ▄███▓ ▄▄▄       ███▄ ▄███▓ ▄▄▄▄    ▄▄▄
+ ▓█████▄ ▓██▒   ▒████▄    ▒██▀ ▀█   ██▄█▒    ▓██▒▀█▀ ██▒▒████▄    ▓██▒▀█▀ ██▒▓█████▄ ▒████▄
+ ▒██▒ ▄██▒██░   ▒██  ▀█▄  ▒▓█    ▄ ▓███▄░    ▓██    ▓██░▒██  ▀█▄  ▓██    ▓██░▒██▒ ▄██▒██  ▀█▄
+ ▒██░█▀  ▒██░   ░██▄▄▄▄██ ▒▓▓▄ ▄██▒▓██ █▄    ▒██    ▒██ ░██▄▄▄▄██ ▒██    ▒██ ▒██░█▀  ░██▄▄▄▄██
+ ░▓█  ▀█▓░██████▒▓█   ▓██▒▒ ▓███▀ ░▒██▒ █▄   ▒██▒   ░██▒ ▓█   ▓██▒▒██▒   ░██▒░▓█  ▀█▓ ▓█   ▓██▒
+ ░▒▓███▀▒░ ▒░▓  ░▒▒   ▓▒█░░ ░▒ ▒  ░▒ ▒▒ ▓▒   ░ ▒░   ░  ░ ▒▒   ▓▒█░░ ▒░   ░  ░░▒▓███▀▒ ▒▒   ▓▒█░
+ ▒░▒   ░ ░ ░ ▒  ░ ▒   ▒▒ ░  ░  ▒   ░ ░▒ ▒░   ░  ░      ░  ▒   ▒▒ ░░  ░      ░▒░▒   ░   ▒   ▒▒ ░
+  ░    ░   ░ ░    ░   ▒   ░        ░ ░░ ░    ░      ░     ░   ▒   ░      ░    ░    ░   ░   ▒
+  ░          ░  ░     ░  ░░ ░      ░  ░             ░         ░  ░       ░    ░            ░  ░
 </pre>
-  <div id="http-warn" style="display:none;background:#3a1a00;border:1px solid var(--orange);color:var(--orange);font-size:12px;padding:0.7rem 1rem;margin-bottom:1rem;max-width:460px;width:100%;text-align:center">
-    ⚠ <strong>HTTPS REQUIRED</strong> — Your browser blocks encryption on plain HTTP.<br>
-    WebCrypto (AES-256-GCM) is disabled. Chat will not work until HTTPS is enabled.
+<div class="tag">
+  encrypted<span class="sep">·</span>ephemeral<span class="sep">·</span>no_accounts<span class="sep">·</span>no_logs<span class="sep">·</span><b>no_trace</b>
+</div>
+
+<div class="warn" id="http-warn">
+  <b>[ HTTPS REQUIRED ]</b> &nbsp; WebCrypto is disabled on plain HTTP. Chat cannot operate.
+</div>
+
+<!-- JOIN panel -->
+<div class="panel">
+  <div class="panel-head">
+    <span><span class="dot">▸</span> JOIN_CHANNEL</span>
+    <span class="badge">[ input room id ]</span>
   </div>
-  <p class="tagline">end-to-end encrypted · no accounts · no logs · <span>no trace</span></p>
-  <div class="card">
-    <div class="card-title">▸ JOIN ROOM</div>
-    <div class="input-row">
-      <input class="inp" id="room-input" placeholder="Room code  e.g. 7KX2 or G-7KX2" maxlength="10" autocomplete="off" spellcheck="false">
-      <button class="btn" onclick="joinFromInput()">JOIN</button>
-    </div>
-    <hr class="divider">
-    <div class="card-title">▸ CREATE NEW ROOM</div>
-    <div class="input-row">
-      <button class="btn" style="flex:1" onclick="createNormalRoom()">CREATE ROOM</button>
-      <button class="btn ghost" style="flex:1" onclick="createGhostRoom()">GHOST ROOM</button>
-    </div>
-    <div class="security-note">
-      <span>◈</span> All messages encrypted in your browser using <span>ECDH P-256 + AES-256-GCM</span><br>
-      <span>◈</span> The relay server never sees your plaintext<br>
-      <span>◈</span> No accounts · No cookies · No message storage<br>
-      <span>◈</span> Sessions vanish when you close the tab
+  <div class="panel-body">
+    <div class="row">
+      <input class="inp" id="room-input" placeholder="room code · e.g. 7KX2 or G-7KX2" maxlength="10" autocomplete="off" spellcheck="false">
+      <button class="btn" onclick="joinFromInput()">&gt;_ JOIN</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════ SECRET VIEW ═══════════════════════ -->
-<div id="secret-view">
-  <div id="secret-box">
-    <pre>
- ██████╗ ███████╗ ██████╗██████╗ ███████╗████████╗
-██╔════╝ ██╔════╝██╔════╝██╔══██╗██╔════╝╚══██╔══╝
-╚█████╗  █████╗  ██║     ██████╔╝█████╗     ██║
- ╚═══██╗ ██╔══╝  ██║     ██╔══██╗██╔══╝     ██║
-██████╔╝ ███████╗╚██████╗██║  ██║███████╗   ██║
-╚═════╝  ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝</pre>
-    <div id="secret-content-area">
-      <div class="secret-title">▸ ONE-TIME SECRET</div>
-      <div id="secret-display" style="display:none">
-        <p style="color:var(--dim);font-size:12px;margin-bottom:0.5rem">Decrypted message (only you can read this):</p>
-        <div id="secret-plaintext" style="color:var(--green);padding:1rem;background:var(--bg);border:1px solid #333;word-break:break-all;font-size:14px;"></div>
-        <p style="color:var(--red);font-size:12px;margin-top:1rem">◈ This secret has been destroyed. It cannot be read again.</p>
+<!-- CREATE panel -->
+<div class="panel">
+  <div class="panel-head">
+    <span><span class="dot">▸</span> SPAWN_CHANNEL</span>
+    <span class="badge">[ new encrypted room ]</span>
+  </div>
+  <div class="panel-body" style="padding:0">
+    <button class="btn-block" onclick="createNormalRoom()">
+      <span class="k">[01]</span>standard_room<span class="arr">──▸</span>
+    </button>
+    <button class="btn-block" onclick="createGhostRoom()">
+      <span class="k" style="color:var(--yellow)">[02]</span>ghost_room &nbsp;<span style="color:var(--txt-dim);font-size:10px">(10min · burn-after-read)</span><span class="arr">──▸</span>
+    </button>
+    <button class="btn-block" onclick="openSecretMode()">
+      <span class="k" style="color:var(--red)">[03]</span>one_time_secret &nbsp;<span style="color:var(--txt-dim);font-size:10px">(self-destruct link)</span><span class="arr">──▸</span>
+    </button>
+  </div>
+</div>
+
+<!-- spec -->
+<div class="panel">
+  <div class="panel-head">
+    <span><span class="dot">▸</span> SPEC</span>
+    <span class="badge">v1.3.5</span>
+  </div>
+  <div class="panel-body">
+    <div class="spec">
+      <div><span class="k">keypair</span><span class="v">ECDH P-256 &nbsp;<span style="color:var(--txt-dim)">// generated in browser</span></span></div>
+      <div><span class="k">cipher</span><span class="v">AES-256-GCM &nbsp;<span style="color:var(--txt-dim)">// 128-bit auth tag</span></span></div>
+      <div><span class="k">kdf</span><span class="v">HKDF-SHA256 &nbsp;<span style="color:var(--txt-dim)">// per-message key</span></span></div>
+      <div><span class="k">transport</span><span class="v">WSS &nbsp;<span style="color:var(--txt-dim)">// relay sees only ciphertext</span></span></div>
+      <div><span class="k">storage</span><span class="v">none &nbsp;<span style="color:var(--txt-dim)">// ram-only rooms</span></span></div>
+      <div><span class="k">identity</span><span class="v">ephemeral &nbsp;<span style="color:var(--txt-dim)">// wiped on exit</span></span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ═══════════════════ SECRET VIEW ═══════════════════ -->
+<div class="secret-view" id="secret-view">
+  <div class="secret-panel">
+    <div class="panel">
+      <div class="panel-head">
+        <span><span class="dot">▸</span> ONE_TIME_SECRET</span>
+        <span class="badge" id="secret-badge">[ compose ]</span>
       </div>
-      <div id="secret-create-area">
-        <textarea class="inp" id="secret-text" placeholder="Type your secret here... (password, API key, message)" rows="4" style="width:100%;resize:vertical;height:auto;padding:0.8rem;text-transform:none;letter-spacing:0"></textarea>
-        <div class="input-row" style="margin-top:0.8rem">
-          <button class="btn ghost" style="flex:1" onclick="createSecret()">CREATE ONE-TIME LINK</button>
+      <div class="panel-body">
+        <div id="secret-create">
+          <textarea class="inp" id="secret-text" placeholder="Type the secret · password · api key · message ·"></textarea>
+          <div style="display:flex;gap:1px;margin-top:10px;background:var(--border)">
+            <button class="btn" style="flex:1" onclick="backToLanding()">&lt; BACK</button>
+            <button class="btn red" style="flex:1" onclick="createSecret()">&gt;_ ENCRYPT &amp; GEN LINK</button>
+          </div>
+          <div class="secret-out" id="secret-out">
+            <div class="label">▸ ONE-TIME LINK · expires after first read</div>
+            <div class="val" id="secret-link-val"></div>
+            <button class="btn" onclick="copySecretLink()" style="margin-top:10px">[ COPY ]</button>
+          </div>
+          <div class="spec" style="margin-top:14px">
+            <div><span class="k">key</span><span class="v">in URL fragment &nbsp;<span style="color:var(--txt-dim)">// never sent to server</span></span></div>
+            <div><span class="k">ttl</span><span class="v">10 minutes · one read</span></div>
+            <div><span class="k">server</span><span class="v">sees ciphertext only</span></div>
+          </div>
         </div>
-        <div id="secret-link-box">
-          <div class="label">▸ SHARE THIS LINK (expires once read)</div>
-          <div id="secret-link-val"></div>
-          <button class="btn" id="copy-link-btn" onclick="copySecretLink()" style="margin-top:0.8rem;font-size:11px">COPY LINK</button>
-        </div>
-        <div class="secret-note">
-          <span>◈</span> Encryption key is in the URL fragment — <span>never sent to the server</span><br>
-          <span>◈</span> Message self-destructs after one read or 10 minutes<br>
-          <span>◈</span> Server stores only ciphertext, never plaintext
+        <div class="secret-display" id="secret-display">
+          <div class="label" style="color:var(--txt-dim);font-size:10px;margin-bottom:10px;letter-spacing:1px">▸ DECRYPTED PAYLOAD</div>
+          <div class="txt" id="secret-plain">decrypting...</div>
+          <div style="color:var(--red);font-size:11px;margin-top:12px;letter-spacing:.5px">▸ THIS MESSAGE HAS BEEN DESTROYED · IT CANNOT BE READ AGAIN</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════ CHAT ═══════════════════════ -->
-<div id="chat">
-  <div id="chat-header">
-    <span id="room-badge" class="room-badge">◈ ROOM</span>
-    <span id="countdown" style="display:none"></span>
-    <span id="peer-count">peers: 0</span>
-    <span id="self-fp"></span>
-    <span class="hdr-spacer"></span>
-    <button id="btn-burn" onclick="sendBurn()" title="/burn — incinerate all messages">⚡ BURN</button>
-    <button id="btn-leave" onclick="leaveRoom()">✕ LEAVE</button>
+<!-- ═══════════════════ CHAT ═══════════════════ -->
+<div class="chat" id="chat">
+  <div class="chat-head">
+    <span class="tag-g" id="room-tag">◈ ROOM ----</span>
+    <span class="pipe">│</span>
+    <span class="timer" id="timer" style="display:none"></span>
+    <span class="count"><b id="peer-n">0</b> peers</span>
+    <span class="pipe">│</span>
+    <span class="self">self <b id="chat-self-fp">--------</b></span>
+    <span class="spacer"></span>
+    <button class="mini" onclick="copyLink()" title="copy share link">[ LINK ]</button>
+    <button class="mini red" onclick="sendBurn()" title="/burn">[ BURN ]</button>
+    <button class="mini red" onclick="leaveRoom()">[ EXIT ]</button>
   </div>
-  <div id="messages"></div>
-  <div id="input-bar">
-    <span id="input-label">mamba@node ▸</span>
-    <input id="msg-input" placeholder="Type a message..." autocomplete="off" spellcheck="false">
-    <button id="send-btn" onclick="sendMessage()">▶</button>
+  <div class="msgs" id="msgs"></div>
+  <div class="compose">
+    <span class="prompt" id="prompt">user@mamba:~$</span>
+    <input id="msg-input" placeholder="type_message_ · /help · /peers · /burn · /link · /leave" autocomplete="off" spellcheck="false">
+    <button class="send" onclick="sendMessage()">&gt;</button>
   </div>
 </div>
 
-<!-- ═══════════════════════ BURN OVERLAY ═══════════════════════ -->
-<div id="burn-overlay">
+<!-- burn overlay -->
+<div class="burn" id="burn-overlay">
 <pre>
- ██████╗ ██╗   ██╗██████╗ ███╗   ██╗
- ██╔══██╗██║   ██║██╔══██╗████╗  ██║
- ██████╔╝██║   ██║██████╔╝██╔██╗ ██║
- ██╔══██╗██║   ██║██╔══██╗██║╚████║
- ██████╔╝╚██████╔╝██║  ██║██║ ╚███║
- ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝
+  ██████╗  ██╗   ██╗ ██████╗  ███╗   ██╗
+  ██╔══██╗ ██║   ██║ ██╔══██╗ ████╗  ██║
+  ██████╔╝ ██║   ██║ ██████╔╝ ██╔██╗ ██║
+  ██╔══██╗ ██║   ██║ ██╔══██╗ ██║╚██╗██║
+  ██████╔╝ ╚██████╔╝ ██║  ██║ ██║ ╚████║
+  ╚═════╝   ╚═════╝  ╚═╝  ╚═╝ ╚═╝  ╚═══╝
 </pre>
-  <div class="burn-msg-txt">ALL MESSAGES INCINERATED. NO TRACE.</div>
+  <div class="b">MESSAGES INCINERATED // NO TRACE</div>
 </div>
 
 <script>
-// ═══════════════════ CONFIG (injected by server) ═══════════════════
-const _INJECTED_WS   = "__WS_URL__";
-const _INJECTED_WEB  = "__WEB_URL__";
-const _FALLBACK_HOST = "onionblackmamba.duckdns.org";
+// ─────────────────────────── CONFIG ───────────────────────────
+const _INJ_WS = "__WS_URL__";
+const _INJ_WEB = "__WEB_URL__";
+const _HOST = "onionblackmamba.duckdns.org";
 const CONFIG = {
-  wsUrl:    (_INJECTED_WS.startsWith("__")  ? `wss://${_FALLBACK_HOST}`   : _INJECTED_WS),
-  webUrl:   (_INJECTED_WEB.startsWith("__") ? `https://${_FALLBACK_HOST}` : _INJECTED_WEB),
+  wsUrl:  _INJ_WS.startsWith("__")  ? `wss://${_HOST}`  : _INJ_WS,
+  webUrl: _INJ_WEB.startsWith("__") ? `https://${_HOST}`: _INJ_WEB,
   roomCode: "__ROOM_CODE__".startsWith("__") ? "" : "__ROOM_CODE__",
-  isGhost:  "__IS_GHOST__" === "true",
+  isGhost:  "__IS_GHOST__"  === "true",
   isSecret: "__IS_SECRET__" === "true",
 };
 
-// ═══════════════════ CRYPTO ═══════════════════
-function getSubtle() { return crypto.subtle; }
+// ─────────────────────────── STATE ───────────────────────────
+let ws=null, myKeyPair=null, myPubB64="", myFp="", myClientId="";
+let currentRoomId="", isGhostRoom=false, peers=new Map();
+let ghostExpiresAt=null, ghostInterval=null;
+const $ = id => document.getElementById(id);
 
-async function generateKeyPair() {
-  const subtle = getSubtle();
-  const keyPair = await subtle.generateKey(
-    { name: "ECDH", namedCurve: "P-256" },
-    true,
-    ["deriveKey", "deriveBits"]
-  );
-  const pubRaw = await subtle.exportKey("raw", keyPair.publicKey);
-  const pubB64 = btoa(String.fromCharCode(...new Uint8Array(pubRaw)));
-  return { keyPair, pubB64 };
+// ─────────────────────────── CRYPTO ───────────────────────────
+const S = () => window.crypto.subtle;
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+const b64 = (a) => btoa(String.fromCharCode(...new Uint8Array(a)));
+const u8 = (s) => Uint8Array.from(atob(s), c=>c.charCodeAt(0));
+
+async function genKP(){
+  const kp = await S().generateKey({name:"ECDH",namedCurve:"P-256"},true,["deriveKey","deriveBits"]);
+  const pub = b64(await S().exportKey("raw", kp.publicKey));
+  return {kp, pub};
 }
-
-async function deriveAesKey(myPrivKey, peerPubB64, roomId, messageId) {
-  const subtle = getSubtle();
-  const peerPubBytes = Uint8Array.from(atob(peerPubB64), c => c.charCodeAt(0));  
-  const peerPubKey = await subtle.importKey("raw", peerPubBytes, { name: "ECDH", namedCurve: "P-256" }, false, []);
-  const sharedBits = await subtle.deriveBits({ name: "ECDH", public: peerPubKey }, myPrivKey, 256);
-
-  // HKDF-SHA256
-  const hkdfKey = await subtle.importKey("raw", sharedBits, "HKDF", false, ["deriveBits"]);
-  const salt = new TextEncoder().encode(roomId);
-  const info = new TextEncoder().encode(messageId);
-  const derived = await subtle.deriveBits({ name: "HKDF", hash: "SHA-256", salt, info }, hkdfKey, 256);
-  return subtle.importKey("raw", derived, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+async function deriveKey(priv, peerPubB64, roomId, msgId){
+  const peerKey = await S().importKey("raw", u8(peerPubB64), {name:"ECDH",namedCurve:"P-256"}, false, []);
+  const shared = await S().deriveBits({name:"ECDH", public:peerKey}, priv, 256);
+  const hk = await S().importKey("raw", shared, "HKDF", false, ["deriveBits"]);
+  const out = await S().deriveBits({name:"HKDF", hash:"SHA-256", salt:enc.encode(roomId), info:enc.encode(msgId)}, hk, 256);
+  return S().importKey("raw", out, {name:"AES-GCM"}, false, ["encrypt","decrypt"]);
 }
-
-async function encrypt(aesKey, plaintext, roomId) {
-  const subtle = getSubtle();
+async function encryptMsg(key, text, roomId){
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const aad = new TextEncoder().encode(roomId);
-  const enc = await subtle.encrypt({ name: "AES-GCM", iv, additionalData: aad, tagLength: 128 }, aesKey, new TextEncoder().encode(plaintext));
-  const cipherWithTag = new Uint8Array(enc);
-  const tagStart = cipherWithTag.length - 16;
-  const ciphertext = cipherWithTag.slice(0, tagStart);
-  const authTag = cipherWithTag.slice(tagStart);
-  return {
-    ivB64: btoa(String.fromCharCode(...iv)),
-    ciphertextB64: btoa(String.fromCharCode(...ciphertext)),
-    authTagB64: btoa(String.fromCharCode(...authTag)),
-  };
+  const ct = new Uint8Array(await S().encrypt({name:"AES-GCM", iv, additionalData:enc.encode(roomId), tagLength:128}, key, enc.encode(text)));
+  const tag = ct.slice(ct.length-16), body = ct.slice(0, ct.length-16);
+  return {ivB64:b64(iv), ciphertextB64:b64(body), authTagB64:b64(tag)};
 }
-
-async function decrypt(aesKey, blob, roomId) {
-  const subtle = getSubtle();
-  const iv = Uint8Array.from(atob(blob.ivB64), c => c.charCodeAt(0));
-  const ct = Uint8Array.from(atob(blob.ciphertextB64), c => c.charCodeAt(0));
-  const tag = Uint8Array.from(atob(blob.authTagB64), c => c.charCodeAt(0));
-  const combined = new Uint8Array(ct.length + tag.length);
-  combined.set(ct); combined.set(tag, ct.length);
-  const aad = new TextEncoder().encode(roomId);
-  const plain = await subtle.decrypt({ name: "AES-GCM", iv, additionalData: aad, tagLength: 128 }, aesKey, combined);
-  return new TextDecoder().decode(plain);
+async function decryptMsg(key, blob, roomId){
+  const iv=u8(blob.ivB64), body=u8(blob.ciphertextB64), tag=u8(blob.authTagB64);
+  const full=new Uint8Array(body.length+tag.length); full.set(body); full.set(tag, body.length);
+  const plain = await S().decrypt({name:"AES-GCM", iv, additionalData:enc.encode(roomId), tagLength:128}, key, full);
+  return dec.decode(plain);
 }
-
-async function sha256B64(text) {
-  const subtle = getSubtle();
-  const buf = await subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+async function fpOf(pubB64){
+  const h = await S().digest("SHA-256", u8(pubB64));
+  return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,16).toUpperCase();
 }
+function uuid(){return([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16))}
 
-async function fingerprint(pubB64) {
-  const subtle = getSubtle();
-  const raw = Uint8Array.from(atob(pubB64), c => c.charCodeAt(0));
-  const hash = await subtle.digest("SHA-256", raw);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("").slice(0,16).toUpperCase();
+// ─────────────────────────── ROOM HELPERS ───────────────────────────
+function genRoomId(ghost){
+  const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s="";
+  for (const b of crypto.getRandomValues(new Uint8Array(4))) s+=A[b%A.length];
+  return ghost?`G-${s}`:s;
 }
-
-function randomUUID() {
-  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
-}
-
-// ═══════════════════ STATE ═══════════════════
-let ws = null;
-let myKeyPair = null;
-let myPubB64 = "";
-let myFingerprint = "";
-let myClientId = "";
-let currentRoomId = "";
-let isGhostRoom = false;
-let peers = new Map(); // pubB64 -> { fingerprint, clientId }
-let ghostExpiresAt = null;
-let ghostInterval = null;
-let secretKey = null; // for secret mode
-
-// ═══════════════════ ROOM CREATION ═══════════════════
-function genRoomId(ghost = false) {
-  const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let id = "";
-  const arr = crypto.getRandomValues(new Uint8Array(4));
-  for (const b of arr) id += alpha[b % alpha.length];
-  return ghost ? `G-${id}` : id;
-}
-
-function cryptoAvailable() {
-  if (!crypto || !crypto.subtle) {
-    alert("WebCrypto is not available.\n\nThis page requires HTTPS or localhost to work.\nYour browser blocks encryption on plain HTTP URLs.\n\nAsk the server admin to enable HTTPS.");
-    return false;
-  }
+function cryptoOk(){
+  if(!window.crypto||!window.crypto.subtle){alert("[ERROR] WebCrypto unavailable.\nRequires HTTPS or localhost.");return false}
   return true;
 }
-
-function createNormalRoom() {
-  if (!cryptoAvailable()) return;
-  const roomId = genRoomId(false);
-  enterChat(roomId, false).catch(e => alert("Error: " + e.message));
+function createNormalRoom(){if(!cryptoOk())return;enterChat(genRoomId(false),false).catch(er=>alert("[ERR] "+er.message))}
+function createGhostRoom(){if(!cryptoOk())return;enterChat(genRoomId(true),true).catch(er=>alert("[ERR] "+er.message))}
+async function joinFromInput(){
+  const v = $("room-input").value.trim().toUpperCase();
+  if(!v){alert("[?] enter room code");return}
+  if(!cryptoOk())return;
+  try{ await enterChat(v, v.startsWith("G-")); }
+  catch(er){alert("[ERR] "+(er.message||er));console.error(er)}
 }
 
-function createGhostRoom() {
-  if (!cryptoAvailable()) return;
-  const roomId = genRoomId(true);
-  enterChat(roomId, true).catch(e => alert("Error: " + e.message));
-}
+// ─────────────────────────── ENTER CHAT ───────────────────────────
+async function enterChat(roomId, ghost){
+  currentRoomId=roomId; isGhostRoom=ghost; myClientId=uuid();
+  const kp = await genKP();
+  myKeyPair=kp.kp; myPubB64=kp.pub; myFp=await fpOf(myPubB64);
 
-function joinFromInput() {
-  const val = document.getElementById("room-input").value.trim().toUpperCase();
-  if (!val) { alert("Enter a room code first"); return; }
-  if (!crypto || !crypto.subtle) {
-    alert("Your browser blocked WebCrypto on this HTTP connection.\n\nFix: open the URL in Chrome/Edge and type this in the address bar:\nchrome://flags/#unsafely-treat-insecure-origin-as-secure\n\nOr ask the host to enable HTTPS.");
-    return;
+  $("landing").style.display="none";
+  $("secret-view").style.display="none";
+  $("chat").style.display="flex";
+
+  $("room-tag").textContent = (ghost?"◈ GHOST":"◈ ROOM")+" "+roomId;
+  $("room-tag").className = "tag-g"+(ghost?" ghost":"");
+  $("chat-self-fp").textContent = myFp;
+  $("self-id").textContent = myFp;
+  $("prompt").textContent = ghost?"ghost@mamba:~$":"user@mamba:~$";
+  $("prompt").className = "prompt"+(ghost?" ghost":"");
+  $("msg-input").className = ghost?"ghost-c":"";
+  $("msgs").innerHTML="";
+
+  if(ghost){
+    ghostExpiresAt = Date.now()+10*60*1000;
+    $("timer").style.display="inline";
+    tickGhost();
+    ghostInterval = setInterval(tickGhost, 1000);
+    sys("ghost mode armed :: self-destruct T-10:00","w");
+    sys("all traffic burns after read","w");
   }
-  const ghost = val.startsWith("G-");
-  enterChat(val, ghost).catch(e => alert("Failed to enter chat: " + e.message));
-}
+  sys(`channel_up :: ${roomId}`);
+  sys(`cipher :: aes-256-gcm · kdf :: hkdf-sha256`);
+  sys(`type /help for cmd list`);
 
-// ═══════════════════ ENTER CHAT ═══════════════════
-async function enterChat(roomId, ghost) {
-  currentRoomId = roomId;
-  isGhostRoom = ghost;
-  myClientId = randomUUID();
-
-  myKeyPair = await generateKeyPair();
-  myPubB64 = myKeyPair.pubB64;
-  myFingerprint = await fingerprint(myPubB64);
-
-  document.getElementById("landing").style.display = "none";
-  document.getElementById("secret-view").style.display = "none";
-  const chatEl = document.getElementById("chat");
-  chatEl.style.display = "flex";
-
-  const badge = document.getElementById("room-badge");
-  badge.textContent = `${ghost ? "◈ GHOST" : "◈ ROOM"} ${roomId}`;
-  badge.className = "room-badge" + (ghost ? " ghost-badge" : "");
-
-  document.getElementById("self-fp").textContent = `id: ${myFingerprint}`;
-  document.getElementById("input-label").textContent = ghost ? "ghost@mamba ▸" : "mamba@node ▸";
-
-  const msgInput = document.getElementById("msg-input");
-  const sendBtn = document.getElementById("send-btn");
-  msgInput.className = ghost ? "ghost-input" : "";
-  sendBtn.className = ghost ? "ghost-send" : "";
-
-  if (ghost) {
-    ghostExpiresAt = Date.now() + 10 * 60 * 1000;
-    document.getElementById("countdown").style.display = "inline";
-    ghostInterval = setInterval(updateCountdown, 1000);
-    updateCountdown();
-    sysMsg("GHOST MODE — self-destruct armed :: 10:00", "warn");
-    sysMsg("all messages burn after read", "warn");
-  }
-
-  sysMsg(`channel open :: ${roomId}`, "");
-  sysMsg("encryption :: AES-256-GCM + ECDH P-256", "");
-  sysMsg("type /help for commands", "");
-
-  history.pushState({}, "", ghost ? `/ghost/${roomId}` : `/join/${roomId}`);
+  history.pushState({},"", ghost?`/ghost/${roomId}`:`/join/${roomId}`);
   connectWs();
 }
 
-// ═══════════════════ WEBSOCKET ═══════════════════
-function connectWs() {
+// ─────────────────────────── WS ───────────────────────────
+function connectWs(){
   ws = new WebSocket(CONFIG.wsUrl);
-
+  $("relay-state").textContent="connecting";
   ws.onopen = () => {
-    sysMsg(`relay connected :: ${CONFIG.wsUrl}`, "");
-    send({ type: "join", roomId: currentRoomId, messageId: randomUUID(), sender: myPubB64, timestamp: Date.now(),
-      payload: { clientId: myClientId, fingerprint: myFingerprint } });
-    send({ type: "key_exchange", roomId: currentRoomId, messageId: randomUUID(), sender: myPubB64, timestamp: Date.now(),
-      payload: { clientId: myClientId, fingerprint: myFingerprint, publicKey: myPubB64 } });
+    $("relay-state").textContent="online";
+    sys(`relay_link :: ${CONFIG.wsUrl}`);
+    wsSend({type:"join", roomId:currentRoomId, messageId:uuid(), sender:myPubB64, timestamp:Date.now(),
+      payload:{clientId:myClientId, fingerprint:myFp}});
+    wsSend({type:"key_exchange", roomId:currentRoomId, messageId:uuid(), sender:myPubB64, timestamp:Date.now(),
+      payload:{clientId:myClientId, fingerprint:myFp, publicKey:myPubB64}});
   };
-
   ws.onmessage = async (e) => {
-    let env;
-    try { env = JSON.parse(e.data); } catch { return; }
-    if (!env || typeof env.type !== "string") return;
-    await handleEnvelope(env);
+    let env; try{env=JSON.parse(e.data)}catch{return}
+    if(!env||typeof env.type!=="string")return;
+    await handle(env);
   };
-
-  ws.onclose = (e) => { sysMsg(`relay disconnected (code ${e.code})`, "error"); };
-  ws.onerror = () => {
-    sysMsg(`relay connection error — could not reach ${CONFIG.wsUrl}`, "error");
-    sysMsg("check that the relay server is running and port 8090 is open", "warn");
-  };
+  ws.onclose=(e)=>{$("relay-state").textContent="offline";sys(`relay_down :: code ${e.code}`,"e")};
+  ws.onerror=()=>{sys(`relay_err :: cannot reach ${CONFIG.wsUrl}`,"e")};
 }
+function wsSend(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
 
-function send(obj) {
-  if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
-}
-
-// ═══════════════════ PROTOCOL HANDLER ═══════════════════
-async function handleEnvelope(env) {
-  switch (env.type) {
+async function handle(env){
+  switch(env.type){
     case "join":
-    case "key_exchange": {
-      const sender = env.sender;
-      const fp = env.payload?.fingerprint ?? "";
-      if (!sender || !fp || sender === myPubB64) return;
-      const isNew = !peers.has(sender);
-      peers.set(sender, { fingerprint: fp, clientId: env.payload?.clientId ?? "" });
-      updatePeerCount();
-      if (isNew && env.type === "join") {
-        sysMsg(`[+] node online :: ${fp.slice(0,16).toUpperCase()}`, "");
-        send({ type: "key_exchange", roomId: currentRoomId, messageId: randomUUID(), sender: myPubB64, timestamp: Date.now(),
-          payload: { clientId: myClientId, fingerprint: myFingerprint, publicKey: myPubB64 } });
+    case "key_exchange":{
+      if(!env.sender||env.sender===myPubB64)return;
+      const fp = env.payload?.fingerprint||"";
+      const fresh = !peers.has(env.sender);
+      peers.set(env.sender, {fp, clientId:env.payload?.clientId||""});
+      updatePeerN();
+      if(fresh && env.type==="join"){
+        sys(`[+] node_up :: ${fp.slice(0,16).toUpperCase()}`);
+        wsSend({type:"key_exchange", roomId:currentRoomId, messageId:uuid(), sender:myPubB64, timestamp:Date.now(),
+          payload:{clientId:myClientId, fingerprint:myFp, publicKey:myPubB64}});
       }
       break;
     }
-    case "leave": {
-      const leaveSender = env.sender;
-      if (peers.has(leaveSender)) {
-        const p = peers.get(leaveSender);
-        sysMsg(`[-] node offline :: ${p.fingerprint.slice(0,16).toUpperCase()}`, "error");
-        peers.delete(leaveSender);
-        updatePeerCount();
+    case "leave":{
+      if(peers.has(env.sender)){
+        const p=peers.get(env.sender);
+        sys(`[-] node_down :: ${p.fp.slice(0,16).toUpperCase()}`,"e");
+        peers.delete(env.sender); updatePeerN();
       }
       break;
     }
-    case "message": {
-      const recipients = env.payload?.recipients;
-      if (!recipients) return;
-      const myBlob = recipients[myPubB64];
-      if (!myBlob) return;
-      try {
-        const aesKey = await deriveAesKey(myKeyPair.keyPair.privateKey, env.sender, env.roomId, env.messageId);
-        const plaintext = await decrypt(aesKey, myBlob, env.roomId);
-        const fp = peers.get(env.sender)?.fingerprint ?? env.sender.slice(0,12);
-        addMessage(fp.slice(0,16).toUpperCase(), plaintext, env.timestamp, false);
-        send({ type: "ack", roomId: env.roomId, messageId: randomUUID(), sender: myPubB64, timestamp: Date.now(),
-          payload: { clientId: myPubB64, messageId: env.messageId } });
-      } catch(err) {
-        sysMsg(`decrypt error: ${err.message}`, "error");
-      }
+    case "message":{
+      const rcp = env.payload?.recipients; if(!rcp)return;
+      const my = rcp[myPubB64]; if(!my)return;
+      try{
+        const k = await deriveKey(myKeyPair.privateKey, env.sender, env.roomId, env.messageId);
+        const txt = await decryptMsg(k, my, env.roomId);
+        const fp = peers.get(env.sender)?.fp ?? env.sender.slice(0,12);
+        addMsg(fp.slice(0,16).toUpperCase(), txt, env.timestamp, false);
+        wsSend({type:"ack", roomId:env.roomId, messageId:uuid(), sender:myPubB64, timestamp:Date.now(),
+          payload:{clientId:myPubB64, messageId:env.messageId}});
+      }catch(er){sys(`decrypt_fail :: ${er.message}`,"e")}
       break;
     }
-    case "burn": {
-      if (env.sender === myPubB64) return;
-      showBurnOverlay();
-      break;
-    }
-    case "rate_limited": {
-      sysMsg(`[!] THROTTLED :: ${env.payload?.reason ?? "rate limit exceeded"}`, "error");
-      break;
-    }
+    case "burn":{ if(env.sender!==myPubB64) showBurn(); break; }
+    case "rate_limited":{ sys(`[!] throttled :: ${env.payload?.reason||"rate limit"}`,"e"); break; }
   }
 }
 
-// ═══════════════════ SEND MESSAGE ═══════════════════
-async function sendMessage() {
-  const input = document.getElementById("msg-input");
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = "";
-
-  if (text.startsWith("/")) {
-    handleCommand(text);
-    return;
+// ─────────────────────────── SEND ───────────────────────────
+async function sendMessage(){
+  const i=$("msg-input"); const t=i.value.trim(); if(!t)return; i.value="";
+  if(t.startsWith("/"))return cmd(t);
+  if(peers.size===0){sys("no peers online :: share room code to invite","w"); addMsg("self",t,Date.now(),true); return}
+  const msgId=uuid(); const rcp={};
+  for(const [pub,] of peers){
+    try{
+      const k = await deriveKey(myKeyPair.privateKey, pub, currentRoomId, msgId);
+      rcp[pub] = await encryptMsg(k, t, currentRoomId);
+    }catch{}
   }
-
-  if (peers.size === 0) {
-    sysMsg("no peers connected — share the room code to invite someone", "warn");
-    addMessage("you", text, Date.now(), true);
-    return;
-  }
-
-  const messageId = randomUUID();
-  const recipients = {};
-  for (const [senderPub, peer] of peers) {
-    try {
-      const aesKey = await deriveAesKey(myKeyPair.keyPair.privateKey, senderPub, currentRoomId, messageId);
-      recipients[senderPub] = await encrypt(aesKey, text, currentRoomId);
-    } catch(e) { /* skip peer */ }
-  }
-
-  send({ type: "message", roomId: currentRoomId, messageId, sender: myPubB64, timestamp: Date.now(),
-    payload: { clientId: myClientId, burnAfterRead: isGhostRoom, recipients } });
-  addMessage("you", text, Date.now(), true);
+  wsSend({type:"message", roomId:currentRoomId, messageId:msgId, sender:myPubB64, timestamp:Date.now(),
+    payload:{clientId:myClientId, burnAfterRead:isGhostRoom, recipients:rcp}});
+  addMsg("self", t, Date.now(), true);
 }
 
-function handleCommand(cmd) {
-  const name = cmd.split(/\s+/)[0];
-  switch(name) {
-    case "/help":
-      sysMsg("commands: /help /peers /burn /leave /copy", "");
-      break;
+function cmd(c){
+  const n = c.split(/\s+/)[0];
+  switch(n){
+    case "/help": sys("cmd :: /help /peers /link /burn /leave /copy"); break;
     case "/peers":
-      sysMsg(`peers online: ${peers.size}`, "");
-      for (const [, p] of peers) sysMsg(`  ◈ ${p.fingerprint.slice(0,16).toUpperCase()}`, "");
+      sys(`peers_online :: ${peers.size}`);
+      for(const[,p]of peers) sys(`  ◈ ${p.fp.slice(0,16).toUpperCase()}`);
       break;
-    case "/burn":
-      sendBurn();
-      break;
-    case "/leave":
-      leaveRoom();
-      break;
-    case "/copy": {
-      const link = `${CONFIG.webUrl}/join/${currentRoomId}`;
-      navigator.clipboard.writeText(link).then(() => sysMsg(`link copied: ${link}`, "")).catch(() => sysMsg(`share: ${link}`, ""));
-      break;
-    }
-    default:
-      sysMsg(`unknown command: ${cmd}`, "error");
+    case "/link": case "/copy": copyLink(); break;
+    case "/burn": sendBurn(); break;
+    case "/leave": leaveRoom(); break;
+    default: sys(`unknown_cmd :: ${c}`,"e");
   }
 }
-
-function sendBurn() {
-  send({ type: "burn", roomId: currentRoomId, messageId: randomUUID(), sender: myPubB64, timestamp: Date.now(),
-    payload: { clientId: myClientId } });
-  showBurnOverlay();
+function sendBurn(){
+  wsSend({type:"burn", roomId:currentRoomId, messageId:uuid(), sender:myPubB64, timestamp:Date.now(), payload:{clientId:myClientId}});
+  showBurn();
+}
+function showBurn(){
+  $("burn-overlay").style.display="flex";
+  $("msgs").innerHTML="";
+  setTimeout(()=>$("burn-overlay").style.display="none", 2200);
+}
+function leaveRoom(){
+  wsSend({type:"leave", roomId:currentRoomId, messageId:uuid(), sender:myPubB64, timestamp:Date.now(), payload:{clientId:myClientId}});
+  if(ws) ws.close();
+  if(ghostInterval) clearInterval(ghostInterval);
+  $("chat").style.display="none";
+  $("landing").style.display="flex";
+  $("msgs").innerHTML=""; peers.clear();
+  $("self-id").textContent="--------";
+  $("relay-state").textContent="idle";
+  history.pushState({},"","/");
+}
+function copyLink(){
+  const route = isGhostRoom?"ghost":"join";
+  const link = `${CONFIG.webUrl}/${route}/${currentRoomId}`;
+  navigator.clipboard.writeText(link).then(()=>sys(`link_copied :: ${link}`)).catch(()=>sys(`share :: ${link}`));
 }
 
-function showBurnOverlay() {
-  const overlay = document.getElementById("burn-overlay");
-  overlay.style.display = "flex";
-  document.getElementById("messages").innerHTML = "";
-  setTimeout(() => { overlay.style.display = "none"; }, 2200);
+// ─────────────────────────── UI helpers ───────────────────────────
+function addMsg(sender, text, ts, me){
+  const d = document.createElement("div");
+  d.className="m"+(isGhostRoom?" ghost":"");
+  const time = new Date(ts).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  d.innerHTML = `<span class="t">[${time}]</span><span class="from ${me?"me":""}">${sender}</span><span class="arr">▸</span>${esc(text)}${me?'<span class="ok">✓</span>':""}`;
+  $("msgs").appendChild(d); $("msgs").scrollTop = $("msgs").scrollHeight;
 }
-
-function leaveRoom() {
-  send({ type: "leave", roomId: currentRoomId, messageId: randomUUID(), sender: myPubB64, timestamp: Date.now(),
-    payload: { clientId: myClientId } });
-  if (ws) ws.close();
-  if (ghostInterval) clearInterval(ghostInterval);
-  document.getElementById("chat").style.display = "none";
-  document.getElementById("landing").style.display = "flex";
-  document.getElementById("messages").innerHTML = "";
-  peers.clear();
-  history.pushState({}, "", "/");
+function sys(text, type){
+  const d = document.createElement("div");
+  d.className = "m sys" + (type?" "+type:"");
+  const p = type==="e"?"[x]":type==="w"?"[!]":"[*]";
+  d.innerHTML = `<span class="pre">${p}</span>${esc(text)}`;
+  $("msgs").appendChild(d); $("msgs").scrollTop = $("msgs").scrollHeight;
 }
-
-// ═══════════════════ UI HELPERS ═══════════════════
-function addMessage(sender, text, timestamp, isSelf) {
-  const msgs = document.getElementById("messages");
-  const div = document.createElement("div");
-  div.className = "msg" + (isGhostRoom ? " ghost-mode" : "");
-  const t = new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const ackClass = isGhostRoom ? "ack-tag ghost-ack" : "ack-tag";
-  div.innerHTML = `<span class="time">${t}</span><span class="sender ${isSelf ? "self" : ""}">${sender}</span><span class="arrow">▶</span>${escHtml(text)}${isSelf ? `<span class="${ackClass}">✓</span>` : ""}`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function sysMsg(text, type) {
-  const msgs = document.getElementById("messages");
-  const div = document.createElement("div");
-  div.className = `msg system ${type}`;
-  div.innerHTML = `<span class="prefix">[${type === "warn" ? "!" : type === "error" ? "✗" : "·"}]</span> ${escHtml(text)}`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function updatePeerCount() {
-  document.getElementById("peer-count").textContent = `peers: ${peers.size}`;
-}
-
-function updateCountdown() {
-  if (!ghostExpiresAt) return;
-  const rem = ghostExpiresAt - Date.now();
-  if (rem <= 0) {
-    clearInterval(ghostInterval);
-    document.getElementById("countdown").textContent = "DESTROYED";
-    sysMsg("ROOM SELF-DESTRUCTED — session terminated. no trace.", "error");
-    setTimeout(leaveRoom, 2000);
-    return;
+function updatePeerN(){ $("peer-n").textContent = peers.size }
+function tickGhost(){
+  if(!ghostExpiresAt)return;
+  const r = ghostExpiresAt - Date.now();
+  if(r<=0){
+    clearInterval(ghostInterval); $("timer").textContent="0:00";
+    sys("channel_self_destructed :: session terminated","e");
+    setTimeout(leaveRoom, 1800); return;
   }
-  const m = Math.floor(rem / 60000).toString().padStart(2, "0");
-  const s = Math.floor((rem % 60000) / 1000).toString().padStart(2, "0");
-  document.getElementById("countdown").textContent = `⏱ ${m}:${s}`;
+  const m = Math.floor(r/60000).toString().padStart(2,"0");
+  const s = Math.floor((r%60000)/1000).toString().padStart(2,"0");
+  $("timer").textContent = `T-${m}:${s}`;
 }
+function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
-function escHtml(t) {
-  return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+// ─────────────────────────── SECRET ───────────────────────────
+function openSecretMode(){
+  $("landing").style.display="none";
+  $("chat").style.display="none";
+  $("secret-view").style.display="flex";
 }
-
-// ═══════════════════ SECRET MODE ═══════════════════
-async function createSecret() {
-  const text = document.getElementById("secret-text").value.trim();
-  if (!text) return;
-
+function backToLanding(){
+  $("secret-view").style.display="none";
+  $("landing").style.display="flex";
+  $("secret-out").style.display="none";
+  $("secret-text").value="";
+}
+async function createSecret(){
+  if(!cryptoOk())return;
+  const text = $("secret-text").value.trim();
+  if(!text){alert("[?] enter secret text");return}
   const rawKey = crypto.getRandomValues(new Uint8Array(32));
-  const aesKey = await subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["encrypt"]);
+  const aesKey = await S().importKey("raw", rawKey, {name:"AES-GCM"}, false, ["encrypt"]);
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const enc = await subtle.encrypt({ name: "AES-GCM", iv }, aesKey, new TextEncoder().encode(text));
-
-  const payload = JSON.stringify({
-    iv: btoa(String.fromCharCode(...iv)),
-    ct: btoa(String.fromCharCode(...new Uint8Array(enc)))
-  });
-
+  const enc2 = await S().encrypt({name:"AES-GCM", iv}, aesKey, enc.encode(text));
+  const payload = JSON.stringify({iv:b64(iv), ct:b64(enc2)});
   const roomId = `G-${genRoomId(false)}`;
-  const keyB64 = btoa(String.fromCharCode(...rawKey));
+  const keyB64 = b64(rawKey);
+  const senderPub = b64(crypto.getRandomValues(new Uint8Array(32)));
+  const clientId = uuid();
 
-  const ghostWs = new WebSocket(CONFIG.wsUrl);
-  ghostWs.onopen = () => {
-    const clientId = randomUUID();
-    const myKp_temp = { pubB64: btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))) };
-    ghostWs.send(JSON.stringify({
-      type: "join", roomId, messageId: randomUUID(), sender: myKp_temp.pubB64, timestamp: Date.now(),
-      payload: { clientId, fingerprint: "SECRET" }
-    }));
-    ghostWs.send(JSON.stringify({
-      type: "message", roomId, messageId: randomUUID(), sender: myKp_temp.pubB64, timestamp: Date.now(),
-      payload: {
-        clientId, burnAfterRead: true,
-        secret: true,
-        ciphertext: payload
-      }
-    }));
-    ghostWs.close();
-  };
+  await new Promise(res => {
+    const s = new WebSocket(CONFIG.wsUrl);
+    s.onopen = () => {
+      s.send(JSON.stringify({type:"join", roomId, messageId:uuid(), sender:senderPub, timestamp:Date.now(),
+        payload:{clientId, fingerprint:"SECRET"}}));
+      s.send(JSON.stringify({type:"message", roomId, messageId:uuid(), sender:senderPub, timestamp:Date.now(),
+        payload:{clientId, burnAfterRead:true, secret:true, ciphertext:payload, recipients:{}}}));
+      s.close(); res();
+    };
+    s.onerror = () => res();
+  });
 
   const link = `${CONFIG.webUrl}/s/${roomId}#key=${encodeURIComponent(keyB64)}`;
-  document.getElementById("secret-link-val").textContent = link;
-  document.getElementById("secret-link-box").style.display = "block";
-  document.getElementById("secret-link-val").dataset.link = link;
+  $("secret-link-val").textContent = link;
+  $("secret-link-val").dataset.link = link;
+  $("secret-out").style.display="block";
+  $("secret-badge").textContent="[ link ready ]";
 }
-
-function copySecretLink() {
-  const link = document.getElementById("secret-link-val").dataset.link;
-  if (!link) return;
-  navigator.clipboard.writeText(link).then(() => {
-    document.getElementById("copy-link-btn").textContent = "COPIED ✓";
-    setTimeout(() => { document.getElementById("copy-link-btn").textContent = "COPY LINK"; }, 2000);
+function copySecretLink(){
+  const l = $("secret-link-val").dataset.link; if(!l)return;
+  navigator.clipboard.writeText(l).then(() => {
+    const b=event.target; const old=b.textContent; b.textContent="[ COPIED ]";
+    setTimeout(()=>b.textContent=old,1500);
   });
 }
+async function decryptSecret(roomId, keyB64){
+  $("landing").style.display="none";
+  $("secret-view").style.display="flex";
+  $("secret-create").style.display="none";
+  $("secret-display").style.display="block";
+  $("secret-badge").textContent="[ reading ]";
 
-// ═══════════════════ KEYBOARD ═══════════════════
-document.addEventListener("DOMContentLoaded", () => {
-  const isSecure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
-  if (!isSecure || !crypto.subtle) {
-    document.getElementById("http-warn").style.display = "block";
-  }
-
-  document.getElementById("msg-input").addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-  });
-  document.getElementById("room-input").addEventListener("keydown", e => {
-    if (e.key === "Enter") joinFromInput();
-  });
-
-  // ── Auto-join from URL ──
-  const path = window.location.pathname;
-  const match = path.match(/\/(join|ghost|s)\/([A-Z0-9\-]+)/i);
-  if (CONFIG.isSecret || path.startsWith("/s/")) {
-    document.getElementById("landing").style.display = "none";
-    document.getElementById("secret-view").style.display = "flex";
-    const hashKey = new URLSearchParams(window.location.hash.slice(1)).get("key");
-    if (hashKey) {
-      document.getElementById("secret-create-area").style.display = "none";
-      document.getElementById("secret-display").style.display = "block";
-      document.getElementById("secret-plaintext").textContent = "Decrypting...";
-      decryptSecret(CONFIG.roomCode || (match?.[2] ?? ""), hashKey);
+  const rawKey = u8(keyB64);
+  const aesKey = await S().importKey("raw", rawKey, {name:"AES-GCM"}, false, ["decrypt"]);
+  const sw = new WebSocket(CONFIG.wsUrl);
+  const tempPub = b64(crypto.getRandomValues(new Uint8Array(32)));
+  sw.onopen = () => {
+    sw.send(JSON.stringify({type:"join", roomId, messageId:uuid(), sender:tempPub, timestamp:Date.now(),
+      payload:{clientId:uuid(), fingerprint:"READER"}}));
+  };
+  sw.onmessage = async (e) => {
+    let env; try{env=JSON.parse(e.data)}catch{return}
+    if(env.type!=="message")return;
+    const payload = env.payload?.ciphertext; if(!payload)return;
+    try{
+      const blob = JSON.parse(payload);
+      const iv = u8(blob.iv), ct = u8(blob.ct);
+      const plain = await S().decrypt({name:"AES-GCM",iv}, aesKey, ct);
+      $("secret-plain").textContent = dec.decode(plain);
+      $("secret-badge").textContent="[ destroyed ]";
+      sw.close();
+    }catch{
+      $("secret-plain").textContent = "decryption_failed :: key mismatch or secret expired";
+      $("secret-plain").style.color = "var(--red)";
     }
-  } else if (match || CONFIG.roomCode) {
-    const roomId = (CONFIG.roomCode || match?.[2] ?? "").toUpperCase();
-    const ghost = CONFIG.isGhost || roomId.startsWith("G-");
-    if (roomId) enterChat(roomId, ghost);
+  };
+  sw.onerror = () => {
+    $("secret-plain").textContent = "connection_error :: secret may have expired";
+    $("secret-plain").style.color = "var(--red)";
+  };
+}
+
+// ─────────────────────────── BOOT ───────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  const secure = location.protocol==="https:" || location.hostname==="localhost" || location.hostname==="127.0.0.1";
+  if(!secure || !window.crypto || !window.crypto.subtle){
+    $("http-warn").style.display="block";
+  }
+  $("relay-state").textContent = "idle";
+
+  $("msg-input").addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){e.preventDefault();sendMessage()} });
+  $("room-input").addEventListener("keydown", e => { if(e.key==="Enter")joinFromInput() });
+
+  // auto-join from url
+  const path = location.pathname;
+  const match = path.match(/\/(join|ghost|s)\/([A-Z0-9\-]+)/i);
+  if(CONFIG.isSecret || path.startsWith("/s/")){
+    const key = new URLSearchParams(location.hash.slice(1)).get("key");
+    const roomId = (CONFIG.roomCode || match?.[2] || "").toUpperCase();
+    if(key && roomId){ decryptSecret(roomId, key); }
+    else { openSecretMode(); }
+  } else if(match || CONFIG.roomCode){
+    const r = (CONFIG.roomCode || match?.[2] || "").toUpperCase();
+    const g = CONFIG.isGhost || r.startsWith("G-");
+    if(r) enterChat(r, g).catch(er=>alert("[ERR] "+er.message));
   }
 });
-
-async function decryptSecret(roomId, keyB64) {
-  const rawKey = Uint8Array.from(atob(keyB64), c => c.charCodeAt(0));
-  const aesKey = await subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
-
-  const secretWs = new WebSocket(CONFIG.wsUrl);
-  const tempPub = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
-  secretWs.onopen = () => {
-    secretWs.send(JSON.stringify({
-      type: "join", roomId, messageId: randomUUID(), sender: tempPub, timestamp: Date.now(),
-      payload: { clientId: randomUUID(), fingerprint: "READER" }
-    }));
-  };
-  secretWs.onmessage = async (e) => {
-    let env; try { env = JSON.parse(e.data); } catch { return; }
-    if (env.type !== "message") return;
-    const ciphertext = env.payload?.ciphertext;
-    if (!ciphertext) return;
-    try {
-      const blob = JSON.parse(ciphertext);
-      const iv = Uint8Array.from(atob(blob.iv), c => c.charCodeAt(0));
-      const ct = Uint8Array.from(atob(blob.ct), c => c.charCodeAt(0));
-      const plain = await subtle.decrypt({ name: "AES-GCM", iv }, aesKey, ct);
-      document.getElementById("secret-plaintext").textContent = new TextDecoder().decode(plain);
-      secretWs.close();
-    } catch {
-      document.getElementById("secret-plaintext").textContent = "Decryption failed — key mismatch or secret expired.";
-      document.getElementById("secret-plaintext").style.color = "var(--red)";
-    }
-  };
-  secretWs.onerror = () => {
-    document.getElementById("secret-plaintext").textContent = "Connection error — secret may have expired.";
-    document.getElementById("secret-plaintext").style.color = "var(--red)";
-  };
-}
 </script>
 </body>
 </html>
