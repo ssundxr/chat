@@ -191,7 +191,7 @@
   <div class="card">
     <div class="card-title">▸ JOIN ROOM</div>
     <div class="input-row">
-      <input class="inp" id="room-input" placeholder="Enter room code (e.g. 7KX2)" maxlength="8" autocomplete="off" spellcheck="false">
+      <input class="inp" id="room-input" placeholder="Room code  e.g. 7KX2 or G-7KX2" maxlength="10" autocomplete="off" spellcheck="false">
       <button class="btn" onclick="joinFromInput()">JOIN</button>
     </div>
     <hr class="divider">
@@ -280,12 +280,15 @@
 
 <script>
 // ═══════════════════ CONFIG (injected by server) ═══════════════════
+const _INJECTED_WS   = "__WS_URL__";
+const _INJECTED_WEB  = "__WEB_URL__";
+const _FALLBACK_HOST = "ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
 const CONFIG = {
-  wsUrl:    "ws://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090",
-  roomCode: "__ROOM_CODE__",
+  wsUrl:    (_INJECTED_WS.startsWith("__")  ? `ws://${_FALLBACK_HOST}`   : _INJECTED_WS),
+  webUrl:   (_INJECTED_WEB.startsWith("__") ? `http://${_FALLBACK_HOST}` : _INJECTED_WEB),
+  roomCode: "__ROOM_CODE__".startsWith("__") ? "" : "__ROOM_CODE__",
   isGhost:  "__IS_GHOST__" === "true",
   isSecret: "__IS_SECRET__" === "true",
-  webUrl:   "http://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090",
 };
 
 // ═══════════════════ CRYPTO ═══════════════════
@@ -458,8 +461,11 @@ function connectWs() {
     await handleEnvelope(env);
   };
 
-  ws.onclose = () => { sysMsg("relay disconnected", "error"); };
-  ws.onerror = () => { sysMsg("relay connection error", "error"); };
+  ws.onclose = (e) => { sysMsg(`relay disconnected (code ${e.code})`, "error"); };
+  ws.onerror = () => {
+    sysMsg(`relay connection error — could not reach ${CONFIG.wsUrl}`, "error");
+    sysMsg("check that the relay server is running and port 8090 is open", "warn");
+  };
 }
 
 function send(obj) {
