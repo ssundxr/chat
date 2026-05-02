@@ -22,8 +22,8 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     height: 7,
     border: { type: "line" },
     style: {
-      border: { fg: "green" },
-      fg: "green",
+      border: { fg: "blue" },
+      fg: "red",
       bg: "black"
     },
     tags: true,
@@ -37,8 +37,8 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     bottom: 5,
     border: { type: "line" },
     style: {
-      border: { fg: "green" },
-      fg: "green",
+      border: { fg: "blue" },
+      fg: "red",
       bg: "black"
     },
     scrollback: 1000,
@@ -65,8 +65,8 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     tags: true,
     border: { type: "line" },
     style: {
-      border: { fg: "green" },
-      fg: "green",
+      border: { fg: "blue" },
+      fg: "red",
       bg: "black"
     },
     content: renderFooter(roomId)
@@ -81,11 +81,11 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     inputOnFocus: false,
     border: { type: "line" },
     style: {
-      border: { fg: "cyan" },
-      fg: "green",
+      border: { fg: "blue" },
+      fg: "red",
       bg: "black",
       focus: {
-        border: { fg: "green" }
+        border: { fg: "red" }
       }
     },
     tags: true,
@@ -104,7 +104,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
   });
 
   blackMambaClient.on("status", (message) => {
-    stream.log(`{cyan-fg}[system]{/cyan-fg} ${message}`);
+    stream.log(`{blue-fg}[system]{/blue-fg} ${message}`);
   });
 
   blackMambaClient.on("peer_update", (peers) => {
@@ -116,7 +116,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
   blackMambaClient.on("message", (entry) => {
     const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     stream.log(
-      `{green-fg}[${time}]{/green-fg} {bold}${short(entry.sender)}{/bold} {cyan-fg}:: {/cyan-fg}${entry.text}`
+      `{red-fg}[${time}]{/red-fg} {bold}${short(entry.sender)}{/bold} {blue-fg}:: {/blue-fg}${entry.text}`
     );
     screen.render();
   });
@@ -144,7 +144,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     }
 
     const result = await blackMambaClient.sendMessage(message, clientId, true);
-    stream.log(`{green-fg}${context.shortFingerprint}{/green-fg} {cyan-fg}>>{/cyan-fg} ${message}`);
+    stream.log(`{red-fg}${context.shortFingerprint}{/red-fg} {blue-fg}>>{/blue-fg} ${message}`);
     stream.log(`{black-fg}{white-bg} SENT {/white-bg}{/black-fg} ID: ${result.messageId.slice(0, 8)} [encrypted]`);
     input.setValue("");
     input.focus();
@@ -180,16 +180,16 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
       return;
     }
 
-    if (ch && !key.ctrl && !key.meta) {
+    if (ch && ch.length === 1 && !key.ctrl && !key.meta) {
       const val = input.getValue();
       input.setValue(val + ch);
       screen.render();
     }
   });
 
-  stream.log(`{green-fg}[boot]{/green-fg} node established :: room ${roomId}`);
-  stream.log(`{green-fg}[boot]{/green-fg} crypto initialized :: AES-256-GCM`);
-  stream.log(`{green-fg}[boot]{/green-fg} type {bold}/help{/bold} for command matrix`);
+  stream.log(`{red-fg}[boot]{/red-fg} node established :: room ${roomId}`);
+  stream.log(`{red-fg}[boot]{/red-fg} crypto initialized :: AES-256-GCM`);
+  stream.log(`{red-fg}[boot]{/red-fg} type {bold}/help{/bold} for command matrix`);
   screen.render();
   input.focus();
 }
@@ -201,19 +201,19 @@ function renderHeader(
   clientId: string
 ): string {
   const peerLine = peers.length > 0
-    ? peers.map((peer) => `{cyan-fg}${short(peer.fingerprint)}{/cyan-fg}`).join("  ")
+    ? peers.map((peer) => `{blue-fg}${short(peer.fingerprint)}{/blue-fg}`).join("  ")
     : "{red-fg}no active peers{/red-fg}";
 
   return [
     ` {bold}ONION-CHAT PROTOCOL v1.1{/bold} | {green-fg}STATUS: ACTIVE{/green-fg}`,
     ` ROOM ID: {bold}${roomId}{/bold} | PID: ${process.pid} | NODE: ${short(clientId)}`,
-    ` SELF-HASH: {cyan-fg}${selfFingerprint}{/cyan-fg}`,
+    ` SELF-HASH: {blue-fg}${selfFingerprint}{/blue-fg}`,
     ` PEER MATRIX: ${peerLine}`
   ].join("\n");
 }
 
 function renderFooter(roomId: string): string {
-  return ` {bold}CMD:{/bold} /help  /peers  /fingerprint  /clear  /leave  |  {green-fg}● SECURE CHANNEL{/green-fg}`;
+  return ` {bold}CMD:{/bold} /help  /peers  /fingerprint  /clear  /leave  |  {blue-fg}● SECURE CHANNEL{/blue-fg}`;
 }
 
 function handleLocalCommand(
