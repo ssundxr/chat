@@ -44,7 +44,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     scrollback: 1000,
     tags: true,
     alwaysScroll: true,
-    mouse: true,
+    mouse: false,
     keys: true,
     scrollbar: {
       ch: " ",
@@ -77,7 +77,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     left: 0,
     right: 0,
     height: 3,
-    mouse: true,
+    mouse: false,
     inputOnFocus: false,
     border: { type: "line" },
     style: {

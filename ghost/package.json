@@ -1,6 +1,6 @@
 {
   "name": "onion-chat-mamba",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "type": "module",
   "bin": {
     "black-mamba": "dist/cli/index.js"
