@@ -286,10 +286,10 @@
 // ═══════════════════ CONFIG (injected by server) ═══════════════════
 const _INJECTED_WS   = "__WS_URL__";
 const _INJECTED_WEB  = "__WEB_URL__";
-const _FALLBACK_HOST = "ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
+const _FALLBACK_HOST = "onionblackmamba.duckdns.org";
 const CONFIG = {
-  wsUrl:    (_INJECTED_WS.startsWith("__")  ? `ws://${_FALLBACK_HOST}`   : _INJECTED_WS),
-  webUrl:   (_INJECTED_WEB.startsWith("__") ? `http://${_FALLBACK_HOST}` : _INJECTED_WEB),
+  wsUrl:    (_INJECTED_WS.startsWith("__")  ? `wss://${_FALLBACK_HOST}`   : _INJECTED_WS),
+  webUrl:   (_INJECTED_WEB.startsWith("__") ? `https://${_FALLBACK_HOST}` : _INJECTED_WEB),
   roomCode: "__ROOM_CODE__".startsWith("__") ? "" : "__ROOM_CODE__",
   isGhost:  "__IS_GHOST__" === "true",
   isSecret: "__IS_SECRET__" === "true",

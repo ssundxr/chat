@@ -2,8 +2,8 @@ import { randomBytes, randomUUID, createCipheriv } from "node:crypto";
 import { webcrypto } from "node:crypto";
 import WebSocket from "ws";
 
-const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? "http://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
-const WS_URL = process.env.BLACK_MAMBA_WS_URL ?? "ws://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
+const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? "https://onionblackmamba.duckdns.org";
+const WS_URL = process.env.BLACK_MAMBA_WS_URL ?? "wss://onionblackmamba.duckdns.org";
 
 const subtle = webcrypto.subtle;
 

@@ -25,7 +25,7 @@ export type BlackMambaClientEvents = {
   close: () => void;
 };
 
-const WS_URL = process.env.BLACK_MAMBA_WS_URL ?? "ws://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
+const WS_URL = process.env.BLACK_MAMBA_WS_URL ?? "wss://onionblackmamba.duckdns.org";
 const MAX_RECONNECT_ATTEMPTS = 3;
 const RECONNECT_BASE_MS = 1000;
 

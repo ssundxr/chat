@@ -14,7 +14,7 @@ const MAX_ROOM_SIZE = Number(process.env.BLACK_MAMBA_MAX_ROOM_SIZE ?? 10);
 const TTL_MS = Number(process.env.BLACK_MAMBA_TTL_MS ?? 10 * 60 * 1000);
 const MAX_PAYLOAD_BYTES = Number(process.env.BLACK_MAMBA_MAX_PAYLOAD_BYTES ?? 64 * 1024);
 const MAX_MESSAGES_PER_SECOND = Number(process.env.BLACK_MAMBA_MAX_MESSAGES_PER_SECOND ?? 10);
-const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? `http://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:${PORT}`;
+const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? "https://onionblackmamba.duckdns.org";
 
 const roomManager = new RoomManager({
   maxRooms: MAX_ROOMS,
@@ -43,7 +43,7 @@ function loadWebUi(): string | null {
 }
 
 const WS_URL_FOR_BROWSER = process.env.BLACK_MAMBA_WS_URL_PUBLIC
-  ?? `ws://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:${PORT}`;
+  ?? "wss://onionblackmamba.duckdns.org";
 
 const server = http.createServer((req, res) => {
   const url = req.url ?? "/";

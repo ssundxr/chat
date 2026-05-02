@@ -362,7 +362,7 @@ function handleLocalCommand(
       stream.log(`{red-fg}  ALL MESSAGES INCINERATED. NO TRACE.{/red-fg}`);
       return;
     case "/link": {
-      const webUrl = process.env.BLACK_MAMBA_WEB_URL ?? "http://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
+      const webUrl = process.env.BLACK_MAMBA_WEB_URL ?? "https://onionblackmamba.duckdns.org";
       const route = isGhost ? "ghost" : "join";
       const link = `${webUrl}/${route}/${roomId}`;
       stream.log(`{#00FF41-fg}◈ SHARE LINK{/#00FF41-fg}`);
