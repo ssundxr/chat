@@ -305,9 +305,9 @@ function renderHeader(
 
 function renderFooter(isGhost: boolean): string {
   if (isGhost) {
-    return ` {bold}CMD:{/bold} /help  /peers  /fingerprint  /clear  /burn  /leave  |  {red-fg}◈ GHOST CHANNEL{/red-fg}`;
+    return ` {bold}CMD:{/bold} /help  /peers  /link  /burn  /leave  |  {red-fg}◈ GHOST CHANNEL{/red-fg}`;
   }
-  return ` {bold}CMD:{/bold} /help  /peers  /fingerprint  /clear  /burn  /leave  |  {#00FF41-fg}● SECURE CHANNEL{/#00FF41-fg}`;
+  return ` {bold}CMD:{/bold} /help  /peers  /link  /burn  /leave  |  {#00FF41-fg}● SECURE CHANNEL{/#00FF41-fg}`;
 }
 
 function handleLocalCommand(
@@ -327,7 +327,7 @@ function handleLocalCommand(
 
   switch (name) {
     case "/help":
-      stream.log(`{#888888-fg}commands: /help /peers /fingerprint /clear /burn /leave{/#888888-fg}`);
+      stream.log(`{#888888-fg}commands: /help /peers /fingerprint /clear /burn /link /leave{/#888888-fg}`);
       if (isGhost) {
         stream.log(`{red-fg}/burn{/red-fg} {#888888-fg}— incinerate all messages for all peers{/#888888-fg}`);
       }
@@ -361,6 +361,15 @@ function handleLocalCommand(
       stream.log(`{red-fg}╚══════════════════════════════════════╝{/red-fg}`);
       stream.log(`{red-fg}  ALL MESSAGES INCINERATED. NO TRACE.{/red-fg}`);
       return;
+    case "/link": {
+      const webUrl = process.env.BLACK_MAMBA_WEB_URL ?? "http://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
+      const route = isGhost ? "ghost" : "join";
+      const link = `${webUrl}/${route}/${roomId}`;
+      stream.log(`{#00FF41-fg}◈ SHARE LINK{/#00FF41-fg}`);
+      stream.log(`  {bold}${link}{/bold}`);
+      stream.log(`{#888888-fg}  anyone with this link can join via browser — no install required{/#888888-fg}`);
+      return;
+    }
     case "/leave":
       blackMambaClient.leave(clientId);
       return;
