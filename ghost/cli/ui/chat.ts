@@ -11,7 +11,8 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     smartCSR: true,
     title: `black-mamba :: ${roomId}`,
     fullUnicode: true,
-    dockBorders: true
+    dockBorders: true,
+    terminal: "ansi"
   });
 
   const header = blessed.box({
@@ -77,7 +78,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     right: 0,
     height: 3,
     mouse: true,
-    inputOnFocus: true,
+    inputOnFocus: false,
     border: { type: "line" },
     style: {
       border: { fg: "cyan" },
@@ -146,6 +147,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     stream.log(`{black-fg}{white-bg} SENT {/white-bg}{/black-fg} ID: ${result.messageId.slice(0, 8)} [encrypted]`);
     input.clearValue();
     input.focus();
+    input.readInput();
     screen.render();
   });
 
@@ -154,6 +156,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
   stream.log(`{brightgreen-fg}[boot]{/brightgreen-fg} type {bold}/help{/bold} for command matrix`);
   screen.render();
   input.focus();
+  input.readInput();
 }
 
 function renderHeader(
