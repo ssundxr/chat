@@ -296,9 +296,10 @@ const CONFIG = {
 };
 
 // ═══════════════════ CRYPTO ═══════════════════
-const subtle = crypto.subtle;
+function getSubtle() { return crypto.subtle; }
 
 async function generateKeyPair() {
+  const subtle = getSubtle();
   const keyPair = await subtle.generateKey(
     { name: "ECDH", namedCurve: "P-256" },
     true,
@@ -310,7 +311,8 @@ async function generateKeyPair() {
 }
 
 async function deriveAesKey(myPrivKey, peerPubB64, roomId, messageId) {
-  const peerPubBytes = Uint8Array.from(atob(peerPubB64), c => c.charCodeAt(0));
+  const subtle = getSubtle();
+  const peerPubBytes = Uint8Array.from(atob(peerPubB64), c => c.charCodeAt(0));  
   const peerPubKey = await subtle.importKey("raw", peerPubBytes, { name: "ECDH", namedCurve: "P-256" }, false, []);
   const sharedBits = await subtle.deriveBits({ name: "ECDH", public: peerPubKey }, myPrivKey, 256);
 
@@ -323,6 +325,7 @@ async function deriveAesKey(myPrivKey, peerPubB64, roomId, messageId) {
 }
 
 async function encrypt(aesKey, plaintext, roomId) {
+  const subtle = getSubtle();
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const aad = new TextEncoder().encode(roomId);
   const enc = await subtle.encrypt({ name: "AES-GCM", iv, additionalData: aad, tagLength: 128 }, aesKey, new TextEncoder().encode(plaintext));
@@ -338,6 +341,7 @@ async function encrypt(aesKey, plaintext, roomId) {
 }
 
 async function decrypt(aesKey, blob, roomId) {
+  const subtle = getSubtle();
   const iv = Uint8Array.from(atob(blob.ivB64), c => c.charCodeAt(0));
   const ct = Uint8Array.from(atob(blob.ciphertextB64), c => c.charCodeAt(0));
   const tag = Uint8Array.from(atob(blob.authTagB64), c => c.charCodeAt(0));
@@ -349,11 +353,13 @@ async function decrypt(aesKey, blob, roomId) {
 }
 
 async function sha256B64(text) {
+  const subtle = getSubtle();
   const buf = await subtle.digest("SHA-256", new TextEncoder().encode(text));
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
 }
 
 async function fingerprint(pubB64) {
+  const subtle = getSubtle();
   const raw = Uint8Array.from(atob(pubB64), c => c.charCodeAt(0));
   const hash = await subtle.digest("SHA-256", raw);
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("").slice(0,16).toUpperCase();
