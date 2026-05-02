@@ -22,17 +22,28 @@ const LOGO_FALLBACK = String.raw`┌──────────────�
 └───────────────────────────────┘`;
 
 const BOOT_LINES = [
-  "[ OK ] Initializing black mamba runtime...",
-  "[ OK ] Generating ephemeral ECDH keypair (P-256)...",
-  "[ OK ] Cryptographic entropy verified...",
-  "[ OK ] WebSocket relay connector ready...",
-  "[ OK ] No identity stored. No logs. No trace.",
-  "[ black mamba ] System armed. You are anonymous."
+  `[ ${green("OK")} ] Initializing black mamba runtime...`,
+  `[ ${green("OK")} ] Generating ephemeral ECDH keypair (P-256)...`,
+  `[ ${green("OK")} ] Cryptographic entropy verified...`,
+  `[ ${green("OK")} ] WebSocket relay connector ready...`,
+  `[ ${green("OK")} ] No identity stored. No logs. No trace.`,
+  `[ ${cyan("SYSTEM")} ] black mamba armed. You are anonymous.`
 ];
 
 function green(text: string): string {
-  // Monochrome: return text as-is (no ANSI colors)
-  return text;
+  return `\x1b[32m${text}\x1b[0m`;
+}
+
+function cyan(text: string): string {
+  return `\x1b[36m${text}\x1b[0m`;
+}
+
+function bold(text: string): string {
+  return `\x1b[1m${text}\x1b[0m`;
+}
+
+function dim(text: string): string {
+  return `\x1b[2m${text}\x1b[0m`;
 }
 
 function loadLogo(): string {
@@ -57,9 +68,9 @@ function loadLogo(): string {
 export async function startup(): Promise<StartupContext> {
   process.stdout.write("\u001Bc");
   const logo = loadLogo();
-  process.stdout.write(`${logo}\n`);
-  process.stdout.write(`black mamba v1.1.1  terminal-native · end-to-end encrypted · ephemeral\n`);
-  process.stdout.write(`└─ shell mode: armed | transport: relay | crypto: ECDH + AES-GCM\n\n`);
+  process.stdout.write(green(logo) + "\n");
+  process.stdout.write(bold(`black mamba v1.1.3`) + `  ${dim("terminal-native · end-to-end encrypted · ephemeral")}\n`);
+  process.stdout.write(dim(`└─ `) + `shell mode: ${cyan("armed")} | transport: ${cyan("relay")} | crypto: ${cyan("ECDH + AES-GCM")}\n\n`);
 
   let session: Awaited<ReturnType<typeof createSessionKeyPair>> | undefined;
 
@@ -79,7 +90,7 @@ export async function startup(): Promise<StartupContext> {
 
   const fingerprint = sha256Fingerprint(session.publicKeyDerB64);
   const short = shortFingerprint(fingerprint);
-  process.stdout.write(`\nSession fingerprint: ${short}\n`);
+  process.stdout.write(`\nSession fingerprint: ${cyan(short)}\n`);
 
   return {
     session,

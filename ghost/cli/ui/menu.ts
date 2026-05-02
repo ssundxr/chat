@@ -4,15 +4,21 @@ import type { StartupContext } from "./startup.js";
 export type MenuChoice = "create" | "join" | "quit";
 
 export async function showMainMenu(): Promise<MenuChoice> {
-  process.stdout.write(`\n┌──────────────────────────────────────────┐\n`);
-  process.stdout.write(`│ black-mamba launcher                     │\n`);
-  process.stdout.write(`├──────────────────────────────────────────┤\n`);
-  process.stdout.write(`│ [1] create room   { generate session }   │\n`);
-  process.stdout.write(`│ [2] join room     { enter room id }      │\n`);
-  process.stdout.write(`│ [Q] quit          { destroy session }    │\n`);
-  process.stdout.write(`└──────────────────────────────────────────┘\n\n`);
+  const g = (t: string) => `\x1b[32m${t}\x1b[0m`;
+  const c = (t: string) => `\x1b[36m${t}\x1b[0m`;
+  const b = (t: string) => `\x1b[1m${t}\x1b[0m`;
+  const d = (t: string) => `\x1b[2m${t}\x1b[0m`;
+
+  process.stdout.write(`\n${g("┌──────────────────────────────────────────┐")}\n`);
+  process.stdout.write(`${g("│")} ${b("black-mamba launcher")}                     ${g("│")}\n`);
+  process.stdout.write(`${g("├──────────────────────────────────────────┤")}\n`);
+  process.stdout.write(`${g("│")} [${c("1")}] ${b("create room")}   ${d("{ generate session }")}   ${g("│")}\n`);
+  process.stdout.write(`${g("│")} [${c("2")}] ${b("join room")}     ${d("{ enter room id }")}      ${g("│")}\n`);
+  process.stdout.write(`${g("│")} [${c("Q")}] ${b("quit")}          ${d("{ destroy session }")}    ${g("│")}\n`);
+  process.stdout.write(`${g("└──────────────────────────────────────────┘")}\n\n`);
+  
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const answer = (await rl.question("black-mamba> ")).trim().toLowerCase();
+  const answer = (await rl.question(`${g("onion")}${d("@")}${g("mamba")}${c("> ")}`)).trim().toLowerCase();
   rl.close();
 
   if (answer === "1" || answer === "create") {
@@ -27,6 +33,9 @@ export async function showMainMenu(): Promise<MenuChoice> {
 }
 
 export function printSessionBanner(context: StartupContext, roomId: string): void {
-  process.stdout.write(`\n{ room:${roomId} } session-online\n`);
-  process.stdout.write(`fingerprint: ${context.shortFingerprint}\n\n`);
+  const g = (t: string) => `\x1b[32m${t}\x1b[0m`;
+  const c = (t: string) => `\x1b[36m${t}\x1b[0m`;
+
+  process.stdout.write(`\n{ room:${g(roomId)} } ${c("session-online")}\n`);
+  process.stdout.write(`fingerprint: ${c(context.shortFingerprint)}\n\n`);
 }
