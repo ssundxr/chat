@@ -8,13 +8,12 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
   await blackMambaClient.connect(clientId);
 
   const screen = blessed.screen({
-    smartCSR: true,
+    smartCSR: false,
     title: `black-mamba :: ${roomId}`,
     fullUnicode: true,
     dockBorders: true,
-    terminal: "windows-ansi"
+    terminal: "ansi"
   });
-  screen.program.input.setRawMode(true);
 
   const header = blessed.box({
     top: 0,
