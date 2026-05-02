@@ -76,7 +76,6 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     left: 0,
     right: 0,
     height: 3,
-    keys: true,
     mouse: true,
     inputOnFocus: true,
     border: { type: "line" },
@@ -88,7 +87,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
         border: { fg: "brightgreen" }
       }
     },
-    tags: false,
+    tags: true,
     label: ` {bold}onion@mamba{/bold}:${roomId}# `,
     value: ""
   });
