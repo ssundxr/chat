@@ -151,8 +151,19 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     screen.render();
   };
 
+  let lastKeyTime = 0;
+  let lastChar = "";
+
   screen.on("keypress", (ch, key) => {
     if (screen.focused !== input) return;
+
+    // Debounce rapid duplicate characters (common on some Windows terminals)
+    const now = Date.now();
+    if (ch && ch === lastChar && (now - lastKeyTime) < 30) {
+      return;
+    }
+    lastChar = ch || "";
+    lastKeyTime = now;
 
     if (key.name === "enter" || key.name === "return") {
       const val = input.getValue();
