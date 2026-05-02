@@ -14,6 +14,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     dockBorders: true,
     terminal: "ansi"
   });
+  screen.program.input.setRawMode(true);
 
   const header = blessed.box({
     top: 0,
@@ -72,20 +73,20 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     content: renderFooter(roomId)
   });
 
-  const input = blessed.textbox({
+  const input = blessed.textarea({
     bottom: 3,
     left: 0,
     right: 0,
     height: 3,
     mouse: true,
-    inputOnFocus: false,
+    inputOnFocus: true,
     border: { type: "line" },
     style: {
       border: { fg: "cyan" },
-      fg: "brightgreen",
+      fg: "green",
       bg: "black",
       focus: {
-        border: { fg: "brightgreen" }
+        border: { fg: "green" }
       }
     },
     tags: true,
@@ -116,7 +117,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
   blackMambaClient.on("message", (entry) => {
     const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     stream.log(
-      `{brightgreen-fg}[${time}]{/brightgreen-fg} {bold}${short(entry.sender)}{/bold} {cyan-fg}:: {/cyan-fg}${entry.text}`
+      `{green-fg}[${time}]{/green-fg} {bold}${short(entry.sender)}{/bold} {cyan-fg}:: {/cyan-fg}${entry.text}`
     );
     screen.render();
   });
@@ -147,16 +148,14 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     stream.log(`{black-fg}{white-bg} SENT {/white-bg}{/black-fg} ID: ${result.messageId.slice(0, 8)} [encrypted]`);
     input.clearValue();
     input.focus();
-    input.readInput();
     screen.render();
   });
 
-  stream.log(`{brightgreen-fg}[boot]{/brightgreen-fg} node established :: room ${roomId}`);
-  stream.log(`{brightgreen-fg}[boot]{/brightgreen-fg} crypto initialized :: AES-256-GCM`);
-  stream.log(`{brightgreen-fg}[boot]{/brightgreen-fg} type {bold}/help{/bold} for command matrix`);
+  stream.log(`{green-fg}[boot]{/green-fg} node established :: room ${roomId}`);
+  stream.log(`{green-fg}[boot]{/green-fg} crypto initialized :: AES-256-GCM`);
+  stream.log(`{green-fg}[boot]{/green-fg} type {bold}/help{/bold} for command matrix`);
   screen.render();
   input.focus();
-  input.readInput();
 }
 
 function renderHeader(
