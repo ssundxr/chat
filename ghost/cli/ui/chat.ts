@@ -72,13 +72,13 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     content: renderFooter(roomId)
   });
 
-  const input = blessed.textarea({
+  const input = blessed.textbox({
     bottom: 3,
     left: 0,
     right: 0,
     height: 3,
     mouse: true,
-    inputOnFocus: true,
+    inputOnFocus: false,
     border: { type: "line" },
     style: {
       border: { fg: "cyan" },
@@ -126,17 +126,18 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     process.exit(0);
   });
 
-  input.on("submit", async (value) => {
+  const submitMessage = async (value: string) => {
     const message = value.trim();
     if (!message) {
-      input.clearValue();
+      input.setValue("");
       input.focus();
+      screen.render();
       return;
     }
 
     if (message.startsWith("/")) {
       handleLocalCommand(message, stream, header, footer, blackMambaClient, context.shortFingerprint, roomId, clientId);
-      input.clearValue();
+      input.setValue("");
       input.focus();
       screen.render();
       return;
@@ -145,9 +146,34 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     const result = await blackMambaClient.sendMessage(message, clientId, true);
     stream.log(`{green-fg}${context.shortFingerprint}{/green-fg} {cyan-fg}>>{/cyan-fg} ${message}`);
     stream.log(`{black-fg}{white-bg} SENT {/white-bg}{/black-fg} ID: ${result.messageId.slice(0, 8)} [encrypted]`);
-    input.clearValue();
+    input.setValue("");
     input.focus();
     screen.render();
+  };
+
+  screen.on("keypress", (ch, key) => {
+    if (screen.focused !== input) return;
+
+    if (key.name === "enter" || key.name === "return") {
+      const val = input.getValue();
+      submitMessage(val);
+      return;
+    }
+
+    if (key.name === "backspace") {
+      const val = input.getValue();
+      if (val.length > 0) {
+        input.setValue(val.slice(0, -1));
+        screen.render();
+      }
+      return;
+    }
+
+    if (ch && !key.ctrl && !key.meta) {
+      const val = input.getValue();
+      input.setValue(val + ch);
+      screen.render();
+    }
   });
 
   stream.log(`{green-fg}[boot]{/green-fg} node established :: room ${roomId}`);
