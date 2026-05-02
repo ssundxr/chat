@@ -187,6 +187,10 @@
  ██████╔╝███████╗██║  ██║╚██████╗██║  ██╗    ██║ ╚═╝ ██║██║  ██║██║ ╚═╝ ██║██████╔╝██║  ██║
  ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═════╝ ╚═╝  ╚═╝
 </pre>
+  <div id="http-warn" style="display:none;background:#3a1a00;border:1px solid var(--orange);color:var(--orange);font-size:12px;padding:0.7rem 1rem;margin-bottom:1rem;max-width:460px;width:100%;text-align:center">
+    ⚠ <strong>HTTPS REQUIRED</strong> — Your browser blocks encryption on plain HTTP.<br>
+    WebCrypto (AES-256-GCM) is disabled. Chat will not work until HTTPS is enabled.
+  </div>
   <p class="tagline">end-to-end encrypted · no accounts · no logs · <span>no trace</span></p>
   <div class="card">
     <div class="card-title">▸ JOIN ROOM</div>
@@ -381,21 +385,35 @@ function genRoomId(ghost = false) {
   return ghost ? `G-${id}` : id;
 }
 
+function cryptoAvailable() {
+  if (!crypto || !crypto.subtle) {
+    alert("WebCrypto is not available.\n\nThis page requires HTTPS or localhost to work.\nYour browser blocks encryption on plain HTTP URLs.\n\nAsk the server admin to enable HTTPS.");
+    return false;
+  }
+  return true;
+}
+
 function createNormalRoom() {
+  if (!cryptoAvailable()) return;
   const roomId = genRoomId(false);
-  enterChat(roomId, false);
+  enterChat(roomId, false).catch(e => alert("Error: " + e.message));
 }
 
 function createGhostRoom() {
+  if (!cryptoAvailable()) return;
   const roomId = genRoomId(true);
-  enterChat(roomId, true);
+  enterChat(roomId, true).catch(e => alert("Error: " + e.message));
 }
 
 function joinFromInput() {
   const val = document.getElementById("room-input").value.trim().toUpperCase();
-  if (!val) return;
+  if (!val) { alert("Enter a room code first"); return; }
+  if (!crypto || !crypto.subtle) {
+    alert("Your browser blocked WebCrypto on this HTTP connection.\n\nFix: open the URL in Chrome/Edge and type this in the address bar:\nchrome://flags/#unsafely-treat-insecure-origin-as-secure\n\nOr ask the host to enable HTTPS.");
+    return;
+  }
   const ghost = val.startsWith("G-");
-  enterChat(val, ghost);
+  enterChat(val, ghost).catch(e => alert("Failed to enter chat: " + e.message));
 }
 
 // ═══════════════════ ENTER CHAT ═══════════════════
@@ -710,6 +728,11 @@ function copySecretLink() {
 
 // ═══════════════════ KEYBOARD ═══════════════════
 document.addEventListener("DOMContentLoaded", () => {
+  const isSecure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if (!isSecure || !crypto.subtle) {
+    document.getElementById("http-warn").style.display = "block";
+  }
+
   document.getElementById("msg-input").addEventListener("keydown", e => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
