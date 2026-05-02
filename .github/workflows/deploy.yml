@@ -46,6 +46,11 @@ jobs:
           rsync -avz ghost/package.json ghost/package-lock.json \
             $EC2_USER@$EC2_HOST:~/black-mamba-server/
           
-          # Restart service on EC2
+          # Copy updated service file and reload systemd
+          rsync -avz aws/black-mamba.service $EC2_USER@$EC2_HOST:~/black-mamba-server/
           ssh $EC2_USER@$EC2_HOST \
-            "cd ~/black-mamba-server && npm install --production && sudo systemctl restart black-mamba"
+            "sudo cp ~/black-mamba-server/black-mamba.service /etc/systemd/system/black-mamba.service && sudo systemctl daemon-reload"
+          
+          # Install deps and restart service
+          ssh $EC2_USER@$EC2_HOST \
+            "cd ~/black-mamba-server && npm install --production && sudo systemctl restart black-mamba && sudo systemctl status black-mamba --no-pager"
