@@ -2,7 +2,7 @@
 
 A high-performance, ephemeral, CLI-based chat tool with E2E encryption.
 
-## 🚀 Quick Install (Direct)
+##  Quick Install (Direct)
 
 Get up and running in seconds. Choose your environment:
 
