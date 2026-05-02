@@ -12,7 +12,7 @@ export async function runChat(roomId: string, context: StartupContext, clientId:
     title: `black-mamba :: ${roomId}`,
     fullUnicode: true,
     dockBorders: true,
-    terminal: "ansi"
+    terminal: "windows-ansi"
   });
   screen.program.input.setRawMode(true);
 
@@ -177,7 +177,7 @@ function renderHeader(
 }
 
 function renderFooter(roomId: string): string {
-  return ` {bold}CMD:{/bold} /help  /peers  /fingerprint  /clear  /leave  |  {brightgreen-fg}● SECURE CHANNEL{/brightgreen-fg}`;
+  return ` {bold}CMD:{/bold} /help  /peers  /fingerprint  /clear  /leave  |  {green-fg}● SECURE CHANNEL{/green-fg}`;
 }
 
 function handleLocalCommand(
