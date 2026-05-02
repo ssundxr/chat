@@ -17,8 +17,8 @@ Environment="BLACK_MAMBA_PORT=8090"
 Environment="BLACK_MAMBA_TTL_MS=600000"
 Environment="BLACK_MAMBA_MAX_ROOMS=500"
 Environment="BLACK_MAMBA_MAX_ROOM_SIZE=10"
-Environment="BLACK_MAMBA_WEB_URL=http://13.53.212.66:8090"
-Environment="BLACK_MAMBA_WS_URL_PUBLIC=ws://13.53.212.66:8090"
+Environment="BLACK_MAMBA_WEB_URL=http://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090"
+Environment="BLACK_MAMBA_WS_URL_PUBLIC=ws://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090"
 
 [Install]
 WantedBy=multi-user.target

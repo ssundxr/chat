@@ -9,7 +9,7 @@ export function createRoomId(): string {
   return Array.from(bytes, (value) => alphabet[value % alphabet.length]).join("");
 }
 
-const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? "http://13.53.212.66:8090";
+const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? "http://ec2-13-53-212-66.eu-north-1.compute.amazonaws.com:8090";
 
 export async function createRoom(context: StartupContext): Promise<void> {
   const roomId = createRoomId();
