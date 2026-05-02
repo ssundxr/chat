@@ -1,4 +1,7 @@
 import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { WebSocketServer } from "ws";
 import { RoomManager } from "./room-manager.js";
@@ -11,6 +14,7 @@ const MAX_ROOM_SIZE = Number(process.env.BLACK_MAMBA_MAX_ROOM_SIZE ?? 10);
 const TTL_MS = Number(process.env.BLACK_MAMBA_TTL_MS ?? 10 * 60 * 1000);
 const MAX_PAYLOAD_BYTES = Number(process.env.BLACK_MAMBA_MAX_PAYLOAD_BYTES ?? 64 * 1024);
 const MAX_MESSAGES_PER_SECOND = Number(process.env.BLACK_MAMBA_MAX_MESSAGES_PER_SECOND ?? 10);
+const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? `http://13.53.212.66:${PORT}`;
 
 const roomManager = new RoomManager({
   maxRooms: MAX_ROOMS,
@@ -18,10 +22,71 @@ const roomManager = new RoomManager({
   ttlMs: TTL_MS
 });
 
+function loadWebUi(): string | null {
+  let baseDir = "";
+  try {
+    baseDir = path.dirname(fileURLToPath(import.meta.url));
+  } catch {
+    baseDir = process.cwd();
+  }
+  const candidates = [
+    path.resolve(process.cwd(), "web", "index.html"),
+    path.resolve(baseDir, "..", "web", "index.html"),
+    path.resolve(baseDir, "../../web", "index.html"),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return fs.readFileSync(p, "utf8");
+    } catch { /* ignore */ }
+  }
+  return null;
+}
+
+const WS_URL_FOR_BROWSER = process.env.BLACK_MAMBA_WS_URL_PUBLIC
+  ?? `ws://13.53.212.66:${PORT}`;
+
 const server = http.createServer((req, res) => {
-  if (req.url === "/healthz") {
+  const url = req.url ?? "/";
+
+  if (url === "/healthz") {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ ok: true, requestId: randomUUID() }));
+    res.end(JSON.stringify({ ok: true, rooms: roomManager.listRooms().length, requestId: randomUUID() }));
+    return;
+  }
+
+  if (req.method === "GET" && (
+    url === "/" ||
+    url.startsWith("/join/") ||
+    url.startsWith("/ghost/") ||
+    url.startsWith("/s/")
+  )) {
+    const html = loadWebUi();
+    if (!html) {
+      res.writeHead(503, { "Content-Type": "text/plain" });
+      res.end("Web UI not found. Run black-mamba relay server.");
+      return;
+    }
+
+    const roomMatch = url.match(/\/(join|ghost|s)\/([A-Z0-9\-]+)/i);
+    const roomCode = roomMatch ? roomMatch[2].toUpperCase() : "";
+    const isGhost = url.startsWith("/ghost/") || roomCode.startsWith("G-");
+    const isSecret = url.startsWith("/s/");
+
+    const injected = html
+      .replace("__WS_URL__", WS_URL_FOR_BROWSER)
+      .replace("__ROOM_CODE__", roomCode)
+      .replace("__IS_GHOST__", String(isGhost))
+      .replace("__IS_SECRET__", String(isSecret))
+      .replace("__WEB_URL__", WEB_URL);
+
+    res.writeHead(200, {
+      "Content-Type": "text/html; charset=utf-8",
+      "X-Frame-Options": "DENY",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "Cache-Control": "no-store"
+    });
+    res.end(injected);
     return;
   }
 

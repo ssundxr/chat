@@ -40,7 +40,10 @@ jobs:
           ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
           
           # Copy files to EC2
-          rsync -avz --delete ghost/dist/ ghost/package.json ghost/package-lock.json \
+          ssh $EC2_USER@$EC2_HOST "mkdir -p ~/black-mamba-server/dist ~/black-mamba-server/web"
+          rsync -avz --delete ghost/dist/ $EC2_USER@$EC2_HOST:~/black-mamba-server/dist/
+          rsync -avz --delete ghost/web/ $EC2_USER@$EC2_HOST:~/black-mamba-server/web/
+          rsync -avz ghost/package.json ghost/package-lock.json \
             $EC2_USER@$EC2_HOST:~/black-mamba-server/
           
           # Restart service on EC2

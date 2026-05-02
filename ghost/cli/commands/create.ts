@@ -9,9 +9,33 @@ export function createRoomId(): string {
   return Array.from(bytes, (value) => alphabet[value % alphabet.length]).join("");
 }
 
+const WEB_URL = process.env.BLACK_MAMBA_WEB_URL ?? "http://13.53.212.66:8090";
+
 export async function createRoom(context: StartupContext): Promise<void> {
   const roomId = createRoomId();
   const clientId = randomUUID();
-  printSessionBanner(context, roomId);
+  printSessionBanner(context, roomId, false);
+  printShareLink(roomId, false);
   await runChat(roomId, context, clientId);
+}
+
+export async function createGhostRoom(context: StartupContext): Promise<void> {
+  const roomId = `G-${createRoomId()}`;
+  const clientId = randomUUID();
+  printSessionBanner(context, roomId, true);
+  printShareLink(roomId, true);
+  await runChat(roomId, context, clientId, { ghost: true, burnAfterRead: true });
+}
+
+function printShareLink(roomId: string, isGhost: boolean): void {
+  const g = (t: string) => `\x1b[32m${t}\x1b[0m`;
+  const o = (t: string) => `\x1b[38;5;208m${t}\x1b[0m`;
+  const d = (t: string) => `\x1b[2m${t}\x1b[0m`;
+  const b = (t: string) => `\x1b[1m${t}\x1b[0m`;
+  const route = isGhost ? "ghost" : "join";
+  const link = `${WEB_URL}/${route}/${roomId}`;
+  process.stdout.write(
+    `  ${d("└─")} ${isGhost ? o("share (ghost)") : g("share")} ${b(link)}\n` +
+    `  ${d("└─ anyone with this link can join — no install required")}\n\n`
+  );
 }

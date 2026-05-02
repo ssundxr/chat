@@ -1,4 +1,4 @@
-export type BlackMambaMessageType = "message" | "join" | "leave" | "ack" | "key_exchange";
+export type BlackMambaMessageType = "message" | "join" | "leave" | "ack" | "key_exchange" | "burn" | "rate_limited" | "ghost_tick";
 
 export type BlackMambaPayload = {
   [key: string]: unknown;

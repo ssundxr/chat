@@ -1,11 +1,11 @@
 import type { StartupContext } from "../ui/startup.js";
 import { showMainMenu } from "../ui/menu.js";
-import { createRoom } from "./create.js";
+import { createRoom, createGhostRoom } from "./create.js";
 import { joinRoom } from "./join.js";
 
 export async function launchMainMenu(context: StartupContext): Promise<void> {
   while (true) {
-    const choice = await showMainMenu();
+    const choice = await showMainMenu(context);
 
     if (choice === "create") {
       await createRoom(context);
@@ -17,8 +17,13 @@ export async function launchMainMenu(context: StartupContext): Promise<void> {
       return;
     }
 
+    if (choice === "ghost") {
+      await createGhostRoom(context);
+      return;
+    }
+
     if (choice === "quit") {
-      process.stdout.write("\n[ black mamba ] Session closed.\n");
+      process.stdout.write("\n  [ black-mamba ] session closed. no trace.\n");
       process.exit(0);
     }
   }

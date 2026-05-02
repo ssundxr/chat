@@ -76,16 +76,28 @@ export function registerRelayHandlers(socket: WebSocket, dependencies: RelayDepe
       return;
     }
 
+    if (envelope.type === "burn") {
+      dependencies.roomManager.broadcast(envelope.roomId, JSON.stringify(envelope));
+      return;
+    }
+
     if (envelope.type === "message") {
       const senderClientId = String(envelope.payload.clientId ?? envelope.sender);
       if (!dependencies.roomManager.canSend(envelope.roomId, senderClientId, dependencies.maxMessagesPerSecond)) {
-        socket.close(1013, "rate limited");
+        const rateLimitedEnvelope = {
+          type: "rate_limited",
+          roomId: envelope.roomId,
+          messageId: envelope.messageId,
+          sender: "relay",
+          payload: { reason: "too many messages — throttle your transmission" },
+          timestamp: Date.now()
+        };
+        socket.send(JSON.stringify(rateLimitedEnvelope));
         return;
       }
 
       const burnAfterRead = Boolean(envelope.payload.burnAfterRead);
       if (!dependencies.roomManager.registerMessage(envelope, burnAfterRead)) {
-        socket.close(1008, "duplicate message");
         return;
       }
     }

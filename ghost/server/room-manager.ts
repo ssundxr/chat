@@ -26,6 +26,8 @@ type RoomState = {
   messageIds: Set<string>;
   pendingMessages: Map<string, PendingMessage>;
   rateWindow: Map<string, number[]>;
+  isGhost: boolean;
+  ghostExpiresAt: number | null;
 };
 
 export type RoomConfig = {
@@ -50,6 +52,8 @@ export class RoomManager {
       this.evictOldestRoom();
     }
 
+    const isGhost = roomId.startsWith("G-");
+    const GHOST_TTL_MS = 10 * 60 * 1000;
     const room: RoomState = {
       roomId,
       createdAt: Date.now(),
@@ -57,7 +61,9 @@ export class RoomManager {
       members: new Map(),
       messageIds: new Set(),
       pendingMessages: new Map(),
-      rateWindow: new Map()
+      rateWindow: new Map(),
+      isGhost,
+      ghostExpiresAt: isGhost ? Date.now() + GHOST_TTL_MS : null
     };
 
     this.rooms.set(roomId, room);
@@ -187,9 +193,29 @@ export class RoomManager {
     return true;
   }
 
+  burnRoom(roomId: string): string[] {
+    const room = this.rooms.get(roomId);
+    if (!room) {
+      return [];
+    }
+    const clientIds = Array.from(room.members.keys());
+    room.pendingMessages.clear();
+    room.messageIds.clear();
+    return clientIds;
+  }
+
+  getGhostExpiresAt(roomId: string): number | null {
+    return this.rooms.get(roomId)?.ghostExpiresAt ?? null;
+  }
+
   sweepExpired(): void {
     const now = Date.now();
     for (const [roomId, room] of this.rooms.entries()) {
+      if (room.isGhost && room.ghostExpiresAt !== null && now >= room.ghostExpiresAt) {
+        this.rooms.delete(roomId);
+        continue;
+      }
+
       for (const [messageId, pending] of room.pendingMessages.entries()) {
         if (pending.expiresAt <= now) {
           room.pendingMessages.delete(messageId);
